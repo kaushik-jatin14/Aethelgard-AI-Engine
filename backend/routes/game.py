@@ -90,7 +90,14 @@ def _call_with_fallback(system_instruction: str, prompt: str) -> str:
         raise RuntimeError("No API keys configured.")
     
     # Order of models to try
-    MODELS_TO_TRY = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash"]
+    # Order of models to try (Broadened for region compatibility)
+    MODELS_TO_TRY = [
+        "gemini-3-flash-preview", 
+        "gemini-2.5-flash", 
+        "gemini-2.0-flash", 
+        "gemini-1.5-flash", 
+        "gemini-flash-latest"
+    ]
     
     last_error = None
     for model in MODELS_TO_TRY:
