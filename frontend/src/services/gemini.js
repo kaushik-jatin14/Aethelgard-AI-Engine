@@ -2,7 +2,8 @@ export const getGeminiAPIKey = () => localStorage.getItem('GEMINI_API_KEY') || '
 export const setGeminiAPIKey = (key) => localStorage.setItem('GEMINI_API_KEY', key);
 
 // The URL of our new FastAPI Backend Server
-const BACKEND_URL = 'http://localhost:8000/api';
+// The URL of our FastAPI Backend Server
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api';
 
 // ================================================================
 // GENERATE GAME ACTION
