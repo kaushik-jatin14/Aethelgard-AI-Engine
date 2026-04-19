@@ -3,7 +3,7 @@ export const setGeminiAPIKey = (key) => localStorage.setItem('GEMINI_API_KEY', k
 
 // The URL of our new FastAPI Backend Server
 // The URL of our FastAPI Backend Server
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://aethelgard-oracle.onrender.com/api';
 
 // ================================================================
 // GENERATE GAME ACTION
