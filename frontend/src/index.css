@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+@import "tailwindcss";
+
+/* ================================================================
+   AETHELGARD — ANCIENT LORE THEME v5.0
+   Palette: Dark parchment, aged gold, iron red, forest green
+================================================================ */
+:root {
+  --bg-deepest:    #08060302;
+  --bg-dark:       #0f0b06;
+  --bg-panel:      #16110a;
+  --bg-card:       #1e1710;
+  --bg-hover:      #261e13;
+
+  --text-parchment: #e8d5a3;
+  --text-faded:     #a08b6a;
+  --text-dim:       #6b5840;
+
+  --gold:           #c9a84c;
+  --gold-bright:    #e8c56a;
+  --gold-dim:       #7a6330;
+
+  --iron-red:       #8b2020;
+  --blood:          #6e1515;
+  --ember:          #d4541a;
+
+  --forest-deep:    #1e3d1e;
+  --forest-light:   #4a7c4a;
+
+  --stone:          #3d3024;
+  --stone-light:    #5a4632;
+
+  --border-stone:   #3d2e1a;
+  --border-gold:    #5a4020;
+  --border-bright:  #8b6830;
+
+  --glow-gold:      rgba(201, 168, 76, 0.35);
+  --glow-red:       rgba(139, 32, 32, 0.5);
+  --shadow-deep:    rgba(0, 0, 0, 0.85);
+}
+
+/* ================================================================
+   BASE BODY — ANCIENT DARK PARCHMENT
+================================================================ */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-parchment);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ================================================================
+   TYPOGRAPHY UTILITIES
+================================================================ */
+.font-ancient       { font-family: 'Cinzel', serif; }
+.font-ancient-deco  { font-family: 'Cinzel Decorative', serif; }
+.font-lore          { font-family: 'Crimson Text', serif; }
+
+/* Headings are ancient by default */
+h1, h2, h3, h4 { font-family: 'Cinzel', serif; }
+
+/* ================================================================
+   ANCIENT PANEL STYLES
+================================================================ */
+.ancient-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-stone);
+  position: relative;
+}
+.ancient-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Corner ornaments for panels */
+.corner-ornament::before, .corner-ornament::after,
+.corner-ornament > span::before, .corner-ornament > span::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--border-bright);
+  border-style: solid;
+}
+.corner-ornament::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.corner-ornament::after  { top: 0; right: 0; border-width: 1px 1px 0 0; }
+
+/* ================================================================
+   ANCIENT BUTTON
+================================================================ */
+.btn-ancient {
+  background: linear-gradient(180deg, #2a1e0e 0%, #1a1208 100%);
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-ancient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(201,168,76,0.08) 0%, transparent 100%);
+}
+.btn-ancient:hover {
+  background: linear-gradient(180deg, #3d2c12 0%, #261e0c 100%);
+  border-color: var(--gold);
+  box-shadow: 0 0 20px var(--glow-gold);
+  color: var(--gold-bright);
+}
+.btn-ancient:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: linear-gradient(180deg, #2e0a0a 0%, #1e0606 100%);
+  border-color: var(--blood);
+  color: #c04040;
+}
+.btn-danger:hover {
+  border-color: var(--iron-red);
+  box-shadow: 0 0 20px var(--glow-red);
+  color: #e06060;
+}
+
+/* ================================================================
+   ANCIENT INPUTS
+================================================================ */
+.input-ancient {
+  background: #0d0a06;
+  border: 1px solid var(--border-stone);
+  color: var(--text-parchment);
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.input-ancient:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 12px rgba(201,168,76,0.2);
+}
+.input-ancient::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ================================================================
+   STAT BAR — ANCIENT STYLE
+================================================================ */
+.stat-bar-track {
+  background: #0d0a06;
+  border: 1px solid var(--border-stone);
+  height: 6px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stat-bar-fill-str  { background: linear-gradient(90deg, #6b1a1a, #c04030); }
+.stat-bar-fill-agi  { background: linear-gradient(90deg, #1a3d1a, #4a8a4a); }
+.stat-bar-fill-mag  { background: linear-gradient(90deg, #1a1a5a, #4060c0); }
+.stat-bar-fill-stl  { background: linear-gradient(90deg, #3d1a5a, #7040b0); }
+.stat-bar-fill-weak { background: linear-gradient(90deg, #5a3a0a, #c9a84c); }
+
+/* ================================================================
+   ANCIENT SCROLLBAR
+================================================================ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0d0a06; }
+::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-stone); }
+
+/* ================================================================
+   TEXTURE OVERLAYS
+================================================================ */
+.parchment-texture {
+  background-image: 
+    linear-gradient(rgba(201,168,76,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.stone-texture {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,32,32,0.04) 0%, transparent 60%);
+}
+
+/* ================================================================
+   MAP TERRAIN CLASSES
+================================================================ */
+.terrain-forest    { fill: #1e3a1e; }
+.terrain-mountain  { fill: #3a3028; }
+.terrain-lava      { fill: #5a1a00; }
+.terrain-water     { fill: #0a1e3a; }
+.terrain-desert    { fill: #3a2e10; }
+.terrain-wasteland { fill: #1e1a12; }
+.terrain-plains    { fill: #1a2a0a; }
+.terrain-void      { fill: #0d0a14; }
+
+/* ================================================================
+   LOCATION EFFECT OVERLAYS (per-location particles/effects)
+================================================================ */
+@keyframes shake-heavy {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  10% { transform: translate(-3px, -2px) rotate(-0.5deg); }
+  20% { transform: translate(4px, 1px) rotate(0.3deg); }
+  30% { transform: translate(-2px, 3px) rotate(-0.2deg); }
+  40% { transform: translate(3px, -1px) rotate(0.4deg); }
+  50% { transform: translate(-1px, 2px) rotate(-0.3deg); }
+  60% { transform: translate(2px, -3px) rotate(0.2deg); }
+  70% { transform: translate(-4px, 1px) rotate(-0.5deg); }
+  80% { transform: translate(3px, 2px) rotate(0.3deg); }
+  90% { transform: translate(-2px, -1px) rotate(-0.2deg); }
+}
+@keyframes shake-light {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, -1px); }
+}
+@keyframes ember-rise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.9; }
+  100% { transform: translateY(-120px) translateX(var(--drift, 20px)) scale(0.2); opacity: 0; }
+}
+@keyframes snow-fall {
+  0%   { transform: translateY(-20px) translateX(0); opacity: 0.8; }
+  100% { transform: translateY(120px) translateX(var(--drift, 15px)); opacity: 0; }
+}
+@keyframes float-creature {
+  0%   { transform: translateX(-60px); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateX(110vw); opacity: 0; }
+}
+@keyframes pulse-void {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.5; }
+}
+@keyframes ripple-water {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+@keyframes lava-pulse {
+  0%, 100% { box-shadow: inset 0 0 60px rgba(212,84,26,0.3); }
+  50% { box-shadow: inset 0 0 120px rgba(212,84,26,0.6); }
+}
+@keyframes butterfly-drift {
+  0%   { transform: translateX(-80px) translateY(0px); opacity: 0; }
+  5%   { opacity: 0.8; }
+  50%  { transform: translateX(50vw) translateY(-40px); }
+  95%  { opacity: 0.8; }
+  100% { transform: translateX(110vw) translateY(20px); opacity: 0; }
+}
+@keyframes golden-glow-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.7; }
+}
+
+/* ================================================================
+   ANCIENT GOLD DIVIDER
+================================================================ */
+.divider-ancient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+}
+
+/* ================================================================
+   HEALTH BAR
+================================================================ */
+.health-bar-track {
+  background: #0d0a06;
+  border: 1px solid var(--border-stone);
+}
+.health-bar-fill {
+  background: linear-gradient(90deg, #6b1a1a, #8b2020);
+  transition: width 1s ease;
+}
+.health-bar-fill.healthy {
+  background: linear-gradient(90deg, #1a3d1a, #2d6b2d);
+}
+
+/* ================================================================
+   FADE-IN ANIMATION
+================================================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ================================================================
+   GLOW EFFECTS
+================================================================ */
+.glow-gold  { box-shadow: 0 0 20px var(--glow-gold); }
+.glow-red   { box-shadow: 0 0 20px var(--glow-red); }
+.text-glow-gold { text-shadow: 0 0 20px rgba(201,168,76,0.6); }
+
+/* ================================================================
+   ANCIENT BADGE / TAG
+================================================================ */
+.badge-ancient {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid var(--border-gold);
+  background: rgba(201,168,76,0.08);
+  color: var(--gold);
+}
+.badge-danger {
+  border-color: var(--blood);
+  background: rgba(139,32,32,0.15);
+  color: #c04040;
+}
+.badge-forest {
+  border-color: #2d5a2d;
+  background: rgba(30,61,30,0.4);
+  color: #6aaa6a;
+}
