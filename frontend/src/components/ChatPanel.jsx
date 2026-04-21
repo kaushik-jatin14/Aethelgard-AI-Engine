@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterName, characterImage, characterFilter }) => {
+const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterName, characterImage, characterFilter, serviceBanner }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -116,9 +116,9 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
                     {botName}
                   </h2>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--forest-light)' }} />
+                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: serviceBanner ? 'var(--iron-red)' : 'var(--forest-light)' }} />
                     <span className="text-xs font-lore italic" style={{ color: 'var(--text-dim)' }}>
-                      Ancient lore link active
+                      {serviceBanner ? 'Hosted Oracle issue detected' : 'Ancient lore link active'}
                     </span>
                   </div>
                 </div>
@@ -151,6 +151,16 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
             {/* ── Messages ── */}
             <div className="relative flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar"
               style={{ background: 'var(--bg-dark)' }}>
+              {serviceBanner && (
+                <div className="p-3 border rounded-md" style={{ background: 'rgba(90,18,18,0.32)', borderColor: 'var(--blood)', color: '#f2dada' }}>
+                  <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'var(--gold)' }}>
+                    Hosted Service Warning
+                  </p>
+                  <p className="text-sm mt-1 whitespace-pre-line font-lore">
+                    {serviceBanner.text.replace(/\*\*/g, '')}
+                  </p>
+                </div>
+              )}
               {history.length === 0 && (
                 <div className="h-full flex items-center justify-center text-center px-8">
                   <div>
