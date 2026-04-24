@@ -32,6 +32,7 @@ const SettingsPanel = ({
   voiceVolume,
   setVoiceVolume,
   selectedVoiceName,
+  onTestNarration,
 }) => {
   return (
     <AnimatePresence>
@@ -215,6 +216,9 @@ const SettingsPanel = ({
                     <span>Grand</span>
                   </div>
                 </div>
+                <button onClick={onTestNarration} className="btn-ancient mt-4 w-full py-3 px-4 rounded text-sm">
+                  Test Oracle Voice
+                </button>
               </SettingSection>
 
               <Divider />

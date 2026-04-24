@@ -457,6 +457,11 @@ function App() {
     }
   };
 
+  const handleTestNarration = () => {
+    speak(`${character?.name || 'Champion'}, the Oracle is bound to thy voice. The realm awaits thy command.`, { force: true });
+    setDialogueVisible(true);
+  };
+
   const locData = locations.find((location) => location.name === gameState.location) || locations[0];
   let atmosphere = 'terrifying';
   if (appState === 'LOGIN' || appState === 'CHAR_SELECT') {
@@ -494,6 +499,7 @@ function App() {
             voiceVolume={voiceVolume}
             setVoiceVolume={setVoiceVolume}
             selectedVoiceName={selectedVoiceName}
+            onTestNarration={handleTestNarration}
           />
           <HelpModal
             isOpen={showHelp}
@@ -531,6 +537,7 @@ function App() {
             voiceVolume={voiceVolume}
             setVoiceVolume={setVoiceVolume}
             selectedVoiceName={selectedVoiceName}
+            onTestNarration={handleTestNarration}
           />
           <HelpModal
             isOpen={showHelp}
@@ -545,7 +552,7 @@ function App() {
     }
 
     return (
-      <div className="flex h-screen flex-col overflow-hidden" style={{ background: 'var(--bg-dark)' }}>
+      <div className="flex h-screen flex-col overflow-hidden" style={{ background: 'var(--game-shell-bg)' }}>
         <div className={`relative z-50 transition-all duration-700 ${cinematicMode ? '-translate-y-full absolute top-0 w-full opacity-0' : 'translate-y-0 opacity-100 bg-[var(--bg-dark)] border-b border-[var(--border-stone)] shadow-xl'}`}>
           <div className="grid grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-6">
           <div className="flex items-center gap-4 min-w-0">
@@ -653,23 +660,23 @@ function App() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -18 }}
                   className="absolute left-4 top-20 right-4 z-20 max-w-[min(92vw,32rem)] rounded-md border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
-                  style={{ background: 'rgba(15, 11, 6, 0.86)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}
+                  style={{ background: 'var(--stage-surface-strong)', borderColor: 'var(--border-gold)', color: 'var(--stage-text-primary)' }}
                 >
-                  <p className="text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+                  <p className="stage-text-secondary text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2">
                     <Sparkles size={12} />
                     Live Scene Director
                   </p>
-                  <p className="text-sm font-bold uppercase break-words" style={{ color: 'var(--text-parchment)' }}>
+                  <p className="text-sm font-bold uppercase break-words" style={{ color: 'var(--stage-text-primary)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--stage-text-secondary)', fontFamily: 'Crimson Text, serif' }}>
                     {dynamicScene.world_shift}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <div className="flex-1">
-                      <p className="text-[0.55rem] uppercase tracking-[0.14em] mb-1" style={{ color: 'var(--text-dim)' }}>
-                        Tension
-                      </p>
+                        <p className="stage-text-muted text-[0.55rem] uppercase tracking-[0.14em] mb-1">
+                          Tension
+                        </p>
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(30,20,10,0.8)' }}>
                         <motion.div
                           className="h-full"
@@ -690,7 +697,7 @@ function App() {
             </AnimatePresence>
 
             <AnimatePresence>
-              {serviceBanner && (
+              {serviceBanner && !chatOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: -14 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -699,7 +706,7 @@ function App() {
                   style={{
                     background: serviceBanner.tone === 'critical' ? 'rgba(96, 22, 22, 0.92)' : 'rgba(82, 55, 11, 0.92)',
                     borderColor: serviceBanner.tone === 'critical' ? 'var(--blood)' : 'var(--gold-dim)',
-                    color: '#f3e7c8',
+                    color: '#fff1da',
                     fontFamily: 'Crimson Text, serif',
                   }}
                 >
@@ -1035,6 +1042,7 @@ function App() {
           voiceVolume={voiceVolume}
           setVoiceVolume={setVoiceVolume}
           selectedVoiceName={selectedVoiceName}
+          onTestNarration={handleTestNarration}
         />
 
         <HelpModal

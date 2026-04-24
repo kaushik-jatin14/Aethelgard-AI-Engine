@@ -125,6 +125,7 @@ export const useNarration = ({ enabled, character, voiceVolume = 1 }) => {
 
     lastSpokenRef.current = cleaned;
     window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
 
     const utterance = new SpeechSynthesisUtterance(cleaned);
     if (selectedVoice) utterance.voice = selectedVoice;

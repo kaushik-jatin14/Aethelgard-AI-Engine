@@ -24,11 +24,14 @@ const ensureApiBase = (url) => {
 const getBackendCandidates = () => {
   const envUrl = ensureApiBase(import.meta.env.VITE_BACKEND_URL);
   const sameOriginApi = '/api';
+  const hostedFallback = !isLocalBrowser()
+    ? 'https://aethelgard-oracle.onrender.com/api'
+    : '';
   const localFallbacks = isLocalBrowser()
     ? ['http://127.0.0.1:8000/api', 'http://localhost:8000/api']
     : [];
 
-  return [...new Set([envUrl, sameOriginApi, ...localFallbacks].filter(Boolean))];
+  return [...new Set([envUrl, hostedFallback, sameOriginApi, ...localFallbacks].filter(Boolean))];
 };
 
 const parseErrorResponse = async (response) => {

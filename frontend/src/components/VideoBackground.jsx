@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import ReactPlayer from 'react-player';
 
 const VideoBackground = ({ videoId, opacity = 1, blur = 0, className = "" }) => {
+  const [allowVideo, setAllowVideo] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const lowPowerDevice = (navigator.hardwareConcurrency || 8) <= 4;
+    const smallViewport = window.innerWidth < 1100;
+
+    setAllowVideo(!(prefersReducedMotion || lowPowerDevice || smallViewport));
+  }, []);
+
   if (!videoId) return null;
+  if (!allowVideo) return null;
 
   return (
     <motion.div 

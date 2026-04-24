@@ -73,20 +73,20 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
 
         {/* Top Row */}
         <div className="flex flex-wrap justify-between gap-3 items-start">
-          <div className="px-3 py-2 text-xs max-w-[16rem] sm:max-w-[18rem]"
-            style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)', fontFamily: 'Cinzel, serif', color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
+          <div className="stage-panel px-3 py-2 text-xs max-w-[16rem] sm:max-w-[18rem]"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: isProcessing ? 'var(--ember)' : 'var(--iron-red)', animation: 'pulse 2s infinite' }}/>
               {isProcessing ? 'Oracle speaks...' : 'Neural Feed Active'}
             </div>
             {dynamicScene?.weather && (
-              <div className="mt-1 text-[0.58rem]" style={{ color: 'var(--gold)' }}>
+              <div className="stage-text-secondary mt-1 text-[0.58rem]">
                 WEATHER: {dynamicScene.weather}
               </div>
             )}
           </div>
-          <div className="px-3 py-2 text-xs text-right max-w-[14rem]"
-            style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)', fontFamily: 'Cinzel, serif', color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
+          <div className="stage-panel px-3 py-2 text-xs text-right max-w-[14rem]"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.08em' }}>
             <div>LAT {locData.x}.{Math.floor(Math.random()*900+100)} N</div>
             <div>LNG {locData.y}.{Math.floor(Math.random()*900+100)} W</div>
           </div>
@@ -109,7 +109,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
           </motion.div>
 
           <div className="px-4 py-4 text-center sm:px-8"
-            style={{ background: 'rgba(8,6,3,0.8)', borderLeft: '3px solid var(--iron-red)', borderRight: '3px solid var(--iron-red)', backdropFilter: 'blur(12px)' }}>
+            style={{ background: 'var(--stage-surface-strong)', borderLeft: '3px solid var(--iron-red)', borderRight: '3px solid var(--iron-red)', backdropFilter: 'blur(12px)' }}>
             <span className="text-xs uppercase flex items-center justify-center gap-2 mb-1"
               style={{ color: 'var(--iron-red)', fontFamily: 'Cinzel, serif', letterSpacing: '0.35em' }}>
               <MapPin size={10}/> Active Zone
@@ -117,15 +117,15 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
             <AnimatePresence mode="wait">
               <motion.h2 key={location} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                 className="text-2xl font-black uppercase break-words sm:text-3xl"
-                style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel Decorative, serif', textShadow: '0 2px 20px rgba(0,0,0,0.9)' }}>
+                style={{ color: 'var(--stage-text-primary)', fontFamily: 'Cinzel Decorative, serif', textShadow: '0 2px 20px rgba(0,0,0,0.9)' }}>
                 {location || 'The Unknown'}
               </motion.h2>
             </AnimatePresence>
-            <span className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+            <span className="stage-text-muted text-xs italic" style={{ fontFamily: 'Crimson Text, serif' }}>
               {locData.atmosphere} zone
             </span>
             {dynamicScene?.objective_focus && (
-              <p className="mt-2 max-w-[30rem] break-words text-[0.65rem] uppercase tracking-[0.18em]" style={{ color: 'var(--gold)', fontFamily: 'Cinzel, serif' }}>
+              <p className="stage-text-secondary mt-2 max-w-[30rem] break-words text-[0.65rem] uppercase tracking-[0.18em]" style={{ fontFamily: 'Cinzel, serif' }}>
                 {dynamicScene.objective_focus}
               </p>
             )}
@@ -134,20 +134,19 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
 
         {/* Bottom Row */}
         <div className="flex flex-wrap justify-between gap-3 items-end">
-          <div className="flex items-center gap-3 px-3 py-2"
-            style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)' }}>
+          <div className="stage-panel flex items-center gap-3 px-3 py-2">
             <div className="w-20 h-1 overflow-hidden rounded-full" style={{ background: 'rgba(30,20,10,0.8)' }}>
               <motion.div className="h-full" style={{ background: 'var(--iron-red)' }}
                 animate={{ width: [`${Math.max(12, tension - 20)}%`, `${Math.min(100, tension)}%`, `${Math.max(18, tension - 8)}%`] }} transition={{ duration: 6, repeat: Infinity }}/>
             </div>
             <span className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif', fontSize: '0.6rem', letterSpacing: '0.1em' }}>SIGNAL</span>
           </div>
-          <div className="flex max-w-[22rem] flex-wrap items-center gap-3 px-3 py-2 text-xs"
-            style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)', color: 'var(--text-dim)', fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}>
+          <div className="stage-panel flex max-w-[22rem] flex-wrap items-center gap-3 px-3 py-2 text-xs"
+            style={{ fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}>
             <div className="flex items-center gap-2">
               <Wind size={11}/> <span className="break-words">{dynamicScene?.ambient_cue || locData.threats?.[0] || 'Area Clear'}</span>
             </div>
-            <div className="flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+            <div className="stage-text-secondary flex items-center gap-2">
               <AlertTriangle size={11} />
               <span>THREAT {threatLevel}</span>
             </div>
@@ -160,9 +159,9 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="absolute bottom-20 left-4 right-4 z-30 rounded-md px-4 py-3 sm:left-1/2 sm:right-auto sm:w-[min(88vw,32rem)] sm:-translate-x-1/2 sm:px-5"
-          style={{ background: 'rgba(10, 6, 4, 0.78)', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--text-parchment)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'var(--stage-surface-strong)', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--stage-text-primary)', backdropFilter: 'blur(8px)' }}
         >
-          <p className="text-[0.6rem] uppercase tracking-[0.18em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+          <p className="stage-text-secondary text-[0.6rem] uppercase tracking-[0.18em] mb-1 flex items-center gap-2">
             <Orbit size={11} />
             World Hazard Feed
           </p>
