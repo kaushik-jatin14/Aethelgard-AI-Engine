@@ -39,6 +39,40 @@
   --shadow-deep:    rgba(0, 0, 0, 0.85);
 }
 
+:root[data-theme='sunlit-chronicle'] {
+  --bg-deepest:    #f6efe001;
+  --bg-dark:       #f4ead4;
+  --bg-panel:      #fbf4e6;
+  --bg-card:       #efe3cb;
+  --bg-hover:      #e8d7b5;
+
+  --text-parchment: #3e2910;
+  --text-faded:     #6d5130;
+  --text-dim:       #8c714d;
+
+  --gold:           #a87a1e;
+  --gold-bright:    #cf9832;
+  --gold-dim:       #836126;
+
+  --iron-red:       #8e4333;
+  --blood:          #7a3124;
+  --ember:          #c9732c;
+
+  --forest-deep:    #42633e;
+  --forest-light:   #658b5f;
+
+  --stone:          #b89c74;
+  --stone-light:    #d2bc9a;
+
+  --border-stone:   #c1a983;
+  --border-gold:    #c39a54;
+  --border-bright:  #d8b268;
+
+  --glow-gold:      rgba(201, 168, 76, 0.22);
+  --glow-red:       rgba(139, 67, 51, 0.22);
+  --shadow-deep:    rgba(63, 39, 16, 0.24);
+}
+
 /* ================================================================
    BASE BODY — ANCIENT DARK PARCHMENT
 ================================================================ */
@@ -48,6 +82,7 @@ body {
   font-family: 'Crimson Text', Georgia, serif;
   font-size: 16px;
   line-height: 1.6;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 /* ================================================================

@@ -53,6 +53,9 @@ HELP_ACTIONS = {"LOGIN_GUEST", "LOGIN_PIN", "CREATE_PROFILE", "CHAT"}
 TRAVEL_WORDS = {"travel", "journey", "ride", "go", "move", "venture", "reach", "enter", "cross"}
 INVESTIGATION_WORDS = {"search", "investigate", "scout", "study", "inspect", "trace", "follow", "look"}
 CONFRONTATION_WORDS = {"fight", "battle", "strike", "slay", "defeat", "challenge", "confront", "seal", "recover", "claim"}
+HINT_WORDS = {"hint", "help", "guidance", "clue", "suggest", "recommend"}
+EASY_WORDS = {"easy", "easier", "gentle", "lower", "simpler"}
+HARD_WORDS = {"hard", "harder", "brutal", "nightmare", "difficult", "deadly"}
 
 REGION_PROFILES = {
     "The Nexus Point": {"biome": "Runic crossroads", "threat": "Rune Wraiths", "faction": "Rift Scholars", "relic": "Nexus Sigil", "npc": "Archivist Selene", "danger": 3},
@@ -324,16 +327,28 @@ def get_system_prompt(character: dict) -> str:
     weapon = character.get("weapon", "a weapon")
     loc = character.get("startLocation", "The Nexus Point")
     mission = character.get("mission", "")
+    difficulty = str(character.get("difficulty") or character.get("currentDifficulty") or "wardens-trial")
+    difficulty_guide = {
+        "pilgrims-grace": "Be generous with hints, recovery, and clear options. Keep encounters forgiving.",
+        "wardens-trial": "Balance danger, mystery, and support. Let skill matter without being cruel.",
+        "abyssforged-doom": "Lean into peril, harsher costs, and more punishing consequences.",
+    }.get(difficulty, "Balance danger, mystery, and support. Let skill matter without being cruel.")
 
     return f"""You are the Ancient Oracle of Aethelgard, an AI Game Master. Speak as a wise, cryptic elder narrator.
 
 CHAMPION: {name} | {title} | Weapon: {weapon} | Base: {loc}
 MISSION: {mission}
 STATS: STR:{stats.get('strength')} AGI:{stats.get('agility')} MAG:{stats.get('magic')} STEALTH:{stats.get('stealth')}
+DIFFICULTY: {difficulty} | GUIDE: {difficulty_guide}
 
 LORE: Elder God Aethel shattered himself into 8 champions to stop the Dark King Malachar from unmaking creation. Only reuniting at The Final Gate can restore Aethel.
 
 VALID LOCATIONS (pick EXACTLY one): {LOCATIONS_STR}
+
+SPECIAL BEHAVIOR:
+- If the player asks for a hint, provide a useful in-world hint tied to the active quest or region.
+- If the player asks to make the game easier or harder, acknowledge the shift in-world and reflect it in the tone of the options.
+- Keep the pacing brisk and avoid overly long exposition.
 
 OUTPUT RULES - Return ONLY this raw JSON (no markdown):
 {{"narrative":"2-4 poetic sentences. Bold **key words**. End with:\\n\\n**What will thou do?**\\n1. [choice]\\n2. [choice]\\n3. [choice]","new_state":{{"location":"exact name","inventory":[],"health":100,"quests":[],"health_change_reason":""}}}}"""
@@ -456,7 +471,6 @@ def call_with_fallback(system_instruction: str, prompt: str) -> str:
     raise_if_unconfigured()
     keys = get_configured_keys()
     models_to_try = [
-        "gemini-3-flash-preview",
         "gemini-2.5-flash",
         "gemini-2.0-flash-lite",
         "gemini-flash-latest",
@@ -472,7 +486,7 @@ def call_with_fallback(system_instruction: str, prompt: str) -> str:
 
             try:
                 logger.info("Trying model=%s key_index=%s", model, key_index)
-                text = call_with_timeout(key, system_instruction, prompt, model, timeout=20)
+                text = call_with_timeout(key, system_instruction, prompt, model, timeout=10)
                 logger.info("Success model=%s key_index=%s", model, key_index)
                 return text
             except Exception as exc:
@@ -513,7 +527,7 @@ def call_world_builder_ai(system_instruction: str, prompt: str) -> str:
         for key_index, key in enumerate(keys):
             try:
                 logger.info("World-builder trying model=%s key_index=%s", model, key_index)
-                return call_with_timeout(key, system_instruction, prompt, model, timeout=6)
+                return call_with_timeout(key, system_instruction, prompt, model, timeout=4)
             except Exception as exc:
                 classified = classify_upstream_error(exc)
                 logger.warning(
@@ -953,6 +967,28 @@ def extract_tags(player_action: str, narrative: str, location: str) -> list[str]
     return tags[:4]
 
 
+def detect_requested_difficulty(player_action: str) -> str | None:
+    lowered = player_action.lower()
+    if "difficulty" in lowered or "make this" in lowered or "change to" in lowered:
+        if any(word in lowered for word in EASY_WORDS):
+            return "pilgrims-grace"
+        if any(word in lowered for word in HARD_WORDS):
+            return "abyssforged-doom"
+    return None
+
+
+def build_hint_flags(player_action: str, current_state: dict) -> list[str]:
+    lowered = player_action.lower()
+    if any(word in lowered for word in HINT_WORDS):
+        hints = ["oracle-hint-requested"]
+        active_chain = current_state.get("quest_chain") or {}
+        active_stage = next((stage for stage in active_chain.get("stages", []) if stage.get("status") == "active"), None)
+        if active_stage and active_stage.get("kind"):
+            hints.append(f"hint-{active_stage['kind']}")
+        return hints
+    return []
+
+
 def advance_story_memory(current_state: dict, new_state: dict, player_action: str, narrative: str) -> dict:
     previous = normalize_story_memory(current_state.get("story_memory"))
     turn = int(current_state.get("turn_count", 0) or 0) + 1
@@ -966,7 +1002,11 @@ def advance_story_memory(current_state: dict, new_state: dict, player_action: st
         "tags": extract_tags(player_action, narrative, location),
     }
     chronicle = (previous["chronicle"] + [entry])[-8:]
-    flags = list(dict.fromkeys(previous["story_flags"] + [f"current-region:{location}"] + entry["tags"]))[-8:]
+    meta_flags = build_hint_flags(player_action, current_state)
+    requested_difficulty = detect_requested_difficulty(player_action)
+    if requested_difficulty:
+        meta_flags.append(f"difficulty:{requested_difficulty}")
+    flags = list(dict.fromkeys(previous["story_flags"] + [f"current-region:{location}"] + entry["tags"] + meta_flags))[-8:]
     consequences = (previous["recent_consequences"] + [consequence])[-4:]
     updated = {
         "summary": "",
@@ -1011,6 +1051,10 @@ def merge_world_state(current_state: dict, new_state: dict, player_action: str, 
     merged["location"] = merged.get("location", current_state.get("location", "The Nexus Point"))
     merged["turn_count"] = int(current_state.get("turn_count", 0) or 0) + 1
     merged["active_region"] = merged["location"]
+    merged["difficulty"] = current_state.get("difficulty", "wardens-trial")
+    requested_difficulty = detect_requested_difficulty(player_action)
+    if requested_difficulty:
+        merged["difficulty"] = requested_difficulty
     merged["story_memory"] = advance_story_memory(current_state, merged, player_action, narrative)
 
     world_map = current_state.get("world_map")

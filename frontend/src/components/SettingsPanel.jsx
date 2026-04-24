@@ -1,8 +1,38 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Volume2, VolumeX, Sun, HelpCircle, Server, Settings } from 'lucide-react';
+import { X, Volume2, VolumeX, Sun, HelpCircle, Server, Settings, MoonStar, ShieldAlert, Mic2 } from 'lucide-react';
 
-const SettingsPanel = ({ isOpen, onClose, volume, setVolume, muted, setMuted, brightness, setBrightness, onOpenHelp }) => {
+const difficultyOptions = [
+  { id: 'pilgrims-grace', label: "Pilgrim's Grace", sub: 'Merciful hints, kinder battles, steadier recovery.' },
+  { id: 'wardens-trial', label: "Warden's Trial", sub: 'Balanced danger for most travelers.' },
+  { id: 'abyssforged-doom', label: 'Abyssforged Doom', sub: 'Sharper costs, fiercer enemies, harsher turns.' },
+];
+
+const realmThemes = [
+  { id: 'ashen-night', label: 'Ashen Night', icon: MoonStar, sub: 'The classic shadow-forged court of Aethelgard.' },
+  { id: 'sunlit-chronicle', label: 'Sunlit Chronicle', icon: Sun, sub: 'A luminous parchment court touched by the Light of Aethel.' },
+];
+
+const SettingsPanel = ({
+  isOpen,
+  onClose,
+  volume,
+  setVolume,
+  muted,
+  setMuted,
+  brightness,
+  setBrightness,
+  onOpenHelp,
+  difficulty,
+  setDifficulty,
+  realmTheme,
+  setRealmTheme,
+  narrationEnabled,
+  setNarrationEnabled,
+  voiceVolume,
+  setVoiceVolume,
+  selectedVoiceName,
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -90,6 +120,99 @@ const SettingsPanel = ({ isOpen, onClose, volume, setVolume, muted, setMuted, br
                     <span>Dark</span>
                     <span>{Math.round(brightness * 100)}%</span>
                     <span>Bright</span>
+                  </div>
+                </div>
+              </SettingSection>
+
+              <Divider />
+
+              <SettingSection icon={<MoonStar size={18} />} title="Realm Aspect" sub="Choose whether Aethelgard appears as shadow-forged night or radiant parchment">
+                <div className="grid grid-cols-1 gap-3 mt-3">
+                  {realmThemes.map((theme) => {
+                    const Icon = theme.icon;
+                    const active = realmTheme === theme.id;
+                    return (
+                      <button
+                        key={theme.id}
+                        onClick={() => setRealmTheme(theme.id)}
+                        className="text-left rounded-md px-4 py-3 transition-all"
+                        style={{
+                          background: active ? 'rgba(201,168,76,0.12)' : 'var(--bg-card)',
+                          border: `1px solid ${active ? 'var(--gold)' : 'var(--border-stone)'}`,
+                          color: active ? 'var(--gold-bright)' : 'var(--text-parchment)',
+                        }}>
+                        <div className="flex items-center gap-3">
+                          <Icon size={16} style={{ color: active ? 'var(--gold)' : 'var(--text-dim)' }} />
+                          <div>
+                            <p className="font-ancient text-xs uppercase tracking-[0.12em]">{theme.label}</p>
+                            <p className="text-xs mt-1 font-lore italic" style={{ color: 'var(--text-dim)' }}>{theme.sub}</p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </SettingSection>
+
+              <Divider />
+
+              <SettingSection icon={<ShieldAlert size={18} />} title="Trial Severity" sub="Set how merciful or brutal the Oracle's campaign should feel">
+                <div className="grid grid-cols-1 gap-3 mt-3">
+                  {difficultyOptions.map((option) => {
+                    const active = difficulty === option.id;
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setDifficulty(option.id)}
+                        className="text-left rounded-md px-4 py-3 transition-all"
+                        style={{
+                          background: active ? 'rgba(201,168,76,0.12)' : 'var(--bg-card)',
+                          border: `1px solid ${active ? 'var(--gold)' : 'var(--border-stone)'}`,
+                          color: active ? 'var(--gold-bright)' : 'var(--text-parchment)',
+                        }}>
+                        <p className="font-ancient text-xs uppercase tracking-[0.12em]">{option.label}</p>
+                        <p className="text-xs mt-1 font-lore italic" style={{ color: 'var(--text-dim)' }}>{option.sub}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </SettingSection>
+
+              <Divider />
+
+              <SettingSection icon={<Mic2 size={18} />} title="Oracle Voicebinding" sub="Let thy champion speak narrations, map lore, warnings, and quest calls aloud">
+                <div className="flex items-center gap-4 mt-3">
+                  <button
+                    onClick={() => setNarrationEnabled(!narrationEnabled)}
+                    className="p-2 rounded transition-all"
+                    style={{
+                      background: narrationEnabled ? 'rgba(30,61,30,0.5)' : 'var(--bg-card)',
+                      border: `1px solid ${narrationEnabled ? 'var(--forest-light)' : 'var(--border-stone)'}`,
+                      color: narrationEnabled ? 'var(--forest-light)' : 'var(--text-dim)',
+                    }}>
+                    <Mic2 size={18} />
+                  </button>
+                  <div className="flex-1">
+                    <p className="text-sm font-ancient" style={{ color: 'var(--text-parchment)' }}>
+                      {narrationEnabled ? 'Voicebinding active' : 'Voicebinding silent'}
+                    </p>
+                    <p className="text-xs mt-1 font-lore italic" style={{ color: 'var(--text-dim)' }}>
+                      Current voice: {selectedVoiceName}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <input
+                    type="range" min="0.2" max="1" step="0.05"
+                    value={voiceVolume}
+                    onChange={(event) => setVoiceVolume(parseFloat(event.target.value))}
+                    className="w-full ancient-volume-slider"
+                    style={{ accentColor: 'var(--gold)' }}
+                  />
+                  <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif' }}>
+                    <span>Low</span>
+                    <span>{Math.round(voiceVolume * 100)}%</span>
+                    <span>Grand</span>
                   </div>
                 </div>
               </SettingSection>

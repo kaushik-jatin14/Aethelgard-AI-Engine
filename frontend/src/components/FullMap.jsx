@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Skull, Users, Mountain, ZoomIn, ZoomOut, Maximize, Sparkles, ScrollText } from 'lucide-react';
 import { locations } from '../data/locations';
@@ -23,6 +23,7 @@ const FullMap = ({
   currentQuestChain = null,
   onForgeRegion = null,
   forgeLoadingRegion = null,
+  onNarrateRegion = null,
 }) => {
   const [hovered, setHovered] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -34,6 +35,11 @@ const FullMap = ({
     () => currentQuestChain?.region === selected?.name ? currentQuestChain : null,
     [currentQuestChain, selected]
   );
+
+  useEffect(() => {
+    if (!selected || !onNarrateRegion) return;
+    onNarrateRegion(selected, selectedIntel, chainPreview);
+  }, [selected, selectedIntel, chainPreview, onNarrateRegion]);
 
   return (
     <motion.div
@@ -111,7 +117,10 @@ const FullMap = ({
                         key={loc.id}
                         onMouseEnter={() => setHovered(loc)}
                         onMouseLeave={() => setHovered(null)}
-                        onClick={() => setSelected(loc)}
+                        onClick={() => {
+                          setSelected(loc);
+                          onForgeRegion?.(loc.name);
+                        }}
                         style={{ cursor: 'pointer' }}
                       >
                         {(isPlayer || isHovered) && (

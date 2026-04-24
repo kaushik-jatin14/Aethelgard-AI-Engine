@@ -11,7 +11,8 @@ export const characters = [
     lore: 'Born in the slums of Oakhaven, Elara learned early that the shadows are the only true friends one can have. After the ruling council executed her guild master, she took up the twin obsidian daggers, swearing a silent oath. She moves unseen, striking with lethal precision before vanishing into the dark.',
     mission: 'Assassinate the corrupt council members and retrieve the stolen Guild Sigil.',
     fallbackColor: 'from-slate-900 to-slate-950',
-    videoLoop: 'v8y8q_27zCg'
+    videoLoop: 'v8y8q_27zCg',
+    voiceProfile: { keywords: ['Sonia', 'Aria', 'Jenny', 'Female'], rate: 0.97, pitch: 1.05 }
   },
   {
     id: 'mage',
@@ -25,7 +26,8 @@ export const characters = [
     lore: 'Expelled from the Grand Academy for delving into forbidden void magic, Kaelen is a master of the arcane arts. He wears the glowing runic robes of his ancestors, channeling raw, unfiltered magical energy that tears through reality itself.',
     mission: 'Locate the scattered fragments of the Aethel Crystal before the void consumes his sanity.',
     fallbackColor: 'from-blue-950 to-slate-950',
-    videoLoop: 't-e2g8B3_EE'
+    videoLoop: 't-e2g8B3_EE',
+    voiceProfile: { keywords: ['Guy', 'Ryan', 'Davis', 'Male'], rate: 0.9, pitch: 0.92 }
   },
   {
     id: 'paladin',
@@ -39,7 +41,8 @@ export const characters = [
     lore: "A veteran of the bloodiest crusade in the realm's history, Sir Galahad is a walking fortress of faith and steel. Bound by a sacred oath to the Light, his battle-scarred plate armor and glowing greatsword strike terror into the hearts of the wicked.",
     mission: 'Purge the creeping darkness from the Northern Wastes and protect the innocent.',
     fallbackColor: 'from-amber-950 to-slate-950',
-    videoLoop: 'J2mFfT_RGY0'
+    videoLoop: 'J2mFfT_RGY0',
+    voiceProfile: { keywords: ['Brian', 'Christopher', 'David', 'Male'], rate: 0.88, pitch: 0.86 }
   },
   {
     id: 'ranger',
@@ -53,7 +56,8 @@ export const characters = [
     lore: 'Raised by the solitary druids of the Deep Woods, Sylas knows the language of the rustling leaves and the howling wind. Armed with a massive composite bow that can pierce armor at a hundred paces, he is the silent guardian of the borders.',
     mission: 'Track down the monstrous beast that is corrupting the sacred groves.',
     fallbackColor: 'from-green-950 to-slate-950',
-    videoLoop: '9yv0xWz0y00'
+    videoLoop: '9yv0xWz0y00',
+    voiceProfile: { keywords: ['Andrew', 'Eric', 'Male'], rate: 0.98, pitch: 0.95 }
   },
   {
     id: 'necromancer',
@@ -67,7 +71,8 @@ export const characters = [
     lore: 'Death is not an end, but merely a transition. Wearing a skeletal mask and wielding a staff forged from the spine of a fallen dragon, Malakor commands the legions of the dead. He views himself as the ultimate custodian of the circle of life.',
     mission: 'Gather the souls of the ancient kings to perform the Great Awakening.',
     fallbackColor: 'from-purple-950 to-slate-950',
-    videoLoop: '1wP0wA3aE7Q'
+    videoLoop: '1wP0wA3aE7Q',
+    voiceProfile: { keywords: ['David', 'Guy', 'George', 'Male'], rate: 0.8, pitch: 0.72 }
   },
   {
     id: 'beastmaster',
@@ -81,7 +86,8 @@ export const characters = [
     lore: 'Torn from his family as a child and abandoned in the frozen tundra, Kael survived by joining a pack of direwolves. Covered in heavy furs and battle scars, he fights with savage fury alongside his massive eagle companion.',
     mission: 'Find the mythical World Tree and establish a new sanctuary.',
     fallbackColor: 'from-cyan-950 to-slate-950',
-    videoLoop: 'zMvxKryyHeg'
+    videoLoop: 'zMvxKryyHeg',
+    voiceProfile: { keywords: ['Mark', 'James', 'Male'], rate: 0.95, pitch: 0.88 }
   },
   {
     id: 'valkyrie',
@@ -96,7 +102,8 @@ export const characters = [
     lore: "Descending from the highest peaks of the Dragon's Roost, Freya Stormborn is a warrior of the skies chosen by the ancient Thunder Gods. Her silver war-braids carry runes of protection, and her spear crackles with living lightning that can split mountains in two. She has never lost a duel — and she never will.",
     mission: 'Destroy the Clockwork Tower before its mechanical army marches on the free kingdoms.',
     fallbackColor: 'from-blue-950 to-indigo-950',
-    videoLoop: 'yT1a7gIuBwI'
+    videoLoop: 'yT1a7gIuBwI',
+    voiceProfile: { keywords: ['Jenny', 'Aria', 'Sonia', 'Female'], rate: 1.0, pitch: 1.08 }
   },
   {
     id: 'priestess',
@@ -111,6 +118,7 @@ export const characters = [
     lore: "High Priestess of the Forgotten Grove, Lyra Moonwhisper is one of the last true speakers of the World-Tree's language. Her moonlit robes are woven from the threads of ancient moonbeams, and her Staff of Thorns can summon a forest's fury in an instant. Gentle in peace, terrifying in wrath.",
     mission: "Cleanse the Blightlands using the Tears of the Sunken City before the corruption destroys all living nature.",
     fallbackColor: 'from-green-950 to-emerald-950',
-    videoLoop: 'yT1a7gIuBwI'
+    videoLoop: 'yT1a7gIuBwI',
+    voiceProfile: { keywords: ['Zira', 'Sara', 'Female'], rate: 0.93, pitch: 1.12 }
   }
 ];

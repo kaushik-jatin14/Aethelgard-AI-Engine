@@ -136,9 +136,11 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
               style={{ borderColor: 'var(--border-stone)', background: 'var(--bg-dark)' }}>
               {[
                 { label: "I know not what to do", action: "I don't know what to do. Guide me, Oracle." },
+                { label: "Grant a hint", action: "Oracle, grant me a clear hint for the current objective." },
                 { label: "My backstory", action: "Tell me my backstory and who I am in this realm." },
                 { label: "Map omen", action: "What does this region reveal about the world map and its hidden connections?" },
                 { label: "Past choices", action: "Recall the consequences of my recent choices and what they mean now." },
+                { label: "Ease the trial", action: "Oracle, make this trial easier and guide me more directly." },
               ].map((q) => (
                 <button key={q.label} onClick={() => handleQuickAction(q.action)}
                   disabled={isProcessing}

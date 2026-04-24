@@ -12,7 +12,15 @@ import AudioManager from './components/AudioManager';
 import QuestPanel from './components/QuestPanel';
 import { generateGameAction, generateWorldBuilderState } from './services/gemini';
 import { locations } from './data/locations';
+import useNarration from './hooks/useNarration';
 import { useUISounds } from './hooks/useUISounds';
+
+const PREFERENCES_KEY = 'AETHELGARD_PREFERENCES';
+const DIFFICULTY_LABELS = {
+  'pilgrims-grace': "Pilgrim's Grace",
+  'wardens-trial': "Warden's Trial",
+  'abyssforged-doom': 'Abyssforged Doom',
+};
 
 const INITIAL_GAME_STATE = {
   location: 'The Nexus Point',
@@ -46,6 +54,7 @@ const INITIAL_GAME_STATE = {
   },
   active_region: 'The Nexus Point',
   turn_count: 0,
+  difficulty: 'wardens-trial',
 };
 
 const buildServiceNotice = (error, channel = 'oracle') => {
@@ -82,15 +91,59 @@ function App() {
   const [volume, setVolume] = useState(0.6);
   const [muted, setMuted] = useState(false);
   const [brightness, setBrightness] = useState(1.0);
+  const [realmTheme, setRealmTheme] = useState('ashen-night');
+  const [difficulty, setDifficulty] = useState('wardens-trial');
+  const [narrationEnabled, setNarrationEnabled] = useState(true);
+  const [voiceVolume, setVoiceVolume] = useState(0.95);
   const [cinematicMode, setCinematicMode] = useState(true);
   const [tomeOpen, setTomeOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [serviceBanner, setServiceBanner] = useState(null);
   const { withSounds } = useUISounds();
+  const { speak, stopNarration, selectedVoiceName } = useNarration({
+    enabled: narrationEnabled,
+    character,
+    voiceVolume,
+  });
+
+  const buildCharacterContext = (baseCharacter) => ({
+    ...baseCharacter,
+    currentDifficulty: difficulty,
+  });
 
   useEffect(() => {
     document.documentElement.style.filter = `brightness(${brightness})`;
   }, [brightness]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(PREFERENCES_KEY);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed.realmTheme) setRealmTheme(parsed.realmTheme);
+      if (parsed.difficulty) setDifficulty(parsed.difficulty);
+      if (typeof parsed.narrationEnabled === 'boolean') setNarrationEnabled(parsed.narrationEnabled);
+      if (typeof parsed.voiceVolume === 'number') setVoiceVolume(parsed.voiceVolume);
+      if (typeof parsed.volume === 'number') setVolume(parsed.volume);
+      if (typeof parsed.muted === 'boolean') setMuted(parsed.muted);
+      if (typeof parsed.brightness === 'number') setBrightness(parsed.brightness);
+    } catch {
+      // Ignore malformed stored preferences.
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = realmTheme;
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify({
+      realmTheme,
+      difficulty,
+      narrationEnabled,
+      voiceVolume,
+      volume,
+      muted,
+      brightness,
+    }));
+  }, [realmTheme, difficulty, narrationEnabled, voiceVolume, volume, muted, brightness]);
 
   useEffect(() => {
     if (!userProfile) return;
@@ -104,6 +157,9 @@ function App() {
       try {
         const { gameState: savedGameState, chatHistory: savedChatHistory, character: savedCharacter } = JSON.parse(save);
         setGameState(savedGameState || INITIAL_GAME_STATE);
+        if (savedGameState?.difficulty) {
+          setDifficulty(savedGameState.difficulty);
+        }
         setChatHistory(savedChatHistory || []);
         setCharacter(savedCharacter || null);
         setAppState(savedCharacter ? 'PLAYING' : 'CHAR_SELECT');
@@ -142,7 +198,7 @@ function App() {
     try {
       const payload = await generateWorldBuilderState({
         currentState: baseState,
-        characterData: char,
+        characterData: buildCharacterContext(char),
         selectedRegion,
         theme: baseState?.world_map?.theme || null,
       });
@@ -177,6 +233,7 @@ function App() {
       quests: [{ id: 'q0', title: 'The Awakening', description: char.mission, status: 'active' }],
       active_region: startLoc,
       turn_count: 0,
+      difficulty,
       story_memory: INITIAL_GAME_STATE.story_memory,
       dynamic_scene: {
         ...INITIAL_GAME_STATE.dynamic_scene,
@@ -197,10 +254,13 @@ function App() {
       const res = await generateGameAction(
         `I am ${char.name}, ${char.title}. I have arrived at ${startLoc} for the first time. Greet me with the ancient oracle's opening narration.`,
         workingState,
-        char
+        buildCharacterContext(char)
       );
       const nextState = res.new_state ? { ...workingState, ...res.new_state } : workingState;
       workingState = nextState;
+      if (nextState.difficulty) {
+        setDifficulty(nextState.difficulty);
+      }
       setChatHistory([{ role: 'gm', text: res.narrative }]);
       setGameState(nextState);
     } catch (error) {
@@ -226,8 +286,11 @@ function App() {
 
     try {
       const previousLocation = gameState.location;
-      const res = await generateGameAction(action, gameState, character);
+      const res = await generateGameAction(action, { ...gameState, difficulty }, buildCharacterContext(character));
       const nextState = res.new_state ? { ...gameState, ...res.new_state } : gameState;
+      if (nextState.difficulty && nextState.difficulty !== difficulty) {
+        setDifficulty(nextState.difficulty);
+      }
 
       setChatHistory([...updatedHistory, { role: 'gm', text: res.narrative }]);
       setGameState(nextState);
@@ -254,6 +317,17 @@ function App() {
     setGameState(forgedState);
   };
 
+  const handleNarrateRegion = (region, intel, questChain) => {
+    const chain = questChain?.region === region?.name ? questChain : null;
+    const summary = [
+      `${region?.name}.`,
+      intel?.current_state || region?.currentEvent || '',
+      intel?.quest_hook || '',
+      chain ? `${chain.title}. ${chain.arc}` : 'The region awaits a forged quest chain.',
+    ].filter(Boolean).join(' ');
+    speak(summary, { force: true });
+  };
+
   const handleReset = () => {
     setAppState('LOGIN');
     setUserProfile(null);
@@ -264,7 +338,26 @@ function App() {
     setServiceBanner(null);
     setIsForgingWorld(false);
     setForgeLoadingRegion(null);
+    stopNarration();
   };
+
+  useEffect(() => {
+    if (!chatHistory.length) return;
+    const latest = chatHistory[chatHistory.length - 1];
+    if (latest.role === 'gm') {
+      speak(latest.text);
+    }
+  }, [chatHistory, speak]);
+
+  useEffect(() => {
+    if (serviceBanner?.text) {
+      speak(serviceBanner.text, { force: true });
+    }
+  }, [serviceBanner, speak]);
+
+  useEffect(() => {
+    setGameState((prev) => ({ ...prev, difficulty }));
+  }, [difficulty]);
 
   const locData = locations.find((location) => location.name === gameState.location) || locations[0];
   let atmosphere = 'terrifying';
@@ -294,6 +387,15 @@ function App() {
             brightness={brightness}
             setBrightness={setBrightness}
             onOpenHelp={() => setShowHelp(true)}
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
+            realmTheme={realmTheme}
+            setRealmTheme={setRealmTheme}
+            narrationEnabled={narrationEnabled}
+            setNarrationEnabled={setNarrationEnabled}
+            voiceVolume={voiceVolume}
+            setVoiceVolume={setVoiceVolume}
+            selectedVoiceName={selectedVoiceName}
           />
           <HelpModal
             isOpen={showHelp}
@@ -322,6 +424,15 @@ function App() {
             brightness={brightness}
             setBrightness={setBrightness}
             onOpenHelp={() => setShowHelp(true)}
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
+            realmTheme={realmTheme}
+            setRealmTheme={setRealmTheme}
+            narrationEnabled={narrationEnabled}
+            setNarrationEnabled={setNarrationEnabled}
+            voiceVolume={voiceVolume}
+            setVoiceVolume={setVoiceVolume}
+            selectedVoiceName={selectedVoiceName}
           />
           <HelpModal
             isOpen={showHelp}
@@ -375,6 +486,10 @@ function App() {
                 {gameState.world_map.theme}
               </p>
             )}
+            <div className="flex items-center gap-2 mt-2">
+              <span className="badge-ancient">{DIFFICULTY_LABELS[difficulty]}</span>
+              <span className="badge-ancient">{realmTheme === 'ashen-night' ? 'Ashen Night' : 'Sunlit Chronicle'}</span>
+            </div>
           </div>
 
           <div className="flex flex-col items-end gap-3">
@@ -772,6 +887,7 @@ function App() {
               currentQuestChain={gameState.quest_chain}
               onForgeRegion={handleForgeRegion}
               forgeLoadingRegion={forgeLoadingRegion}
+              onNarrateRegion={handleNarrateRegion}
             />
           )}
         </AnimatePresence>
@@ -799,6 +915,15 @@ function App() {
           brightness={brightness}
           setBrightness={setBrightness}
           onOpenHelp={() => setShowHelp(true)}
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+          realmTheme={realmTheme}
+          setRealmTheme={setRealmTheme}
+          narrationEnabled={narrationEnabled}
+          setNarrationEnabled={setNarrationEnabled}
+          voiceVolume={voiceVolume}
+          setVoiceVolume={setVoiceVolume}
+          selectedVoiceName={selectedVoiceName}
         />
 
         <HelpModal
