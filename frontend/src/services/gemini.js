@@ -124,4 +124,22 @@ export const generateHelpResponse = async (question) => {
   });
 };
 
+export const generateWorldBuilderState = async ({
+  currentState = {},
+  characterData = {},
+  selectedRegion = null,
+  theme = null,
+} = {}) => {
+  return requestBackend('/world-builder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      currentState,
+      characterData,
+      selectedRegion,
+      theme,
+    }),
+  });
+};
+
 export { BackendError };

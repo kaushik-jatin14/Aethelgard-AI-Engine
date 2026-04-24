@@ -1,54 +1,135 @@
 import React from 'react';
-import { Target, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Target, CheckCircle2, LockKeyhole, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const QuestPanel = ({ quests }) => {
+const stageTone = (status) => {
+  if (status === 'completed') {
+    return {
+      border: 'var(--forest-light)',
+      badge: 'badge-forest',
+      label: 'Sealed',
+      icon: <CheckCircle2 size={12} />,
+    };
+  }
+
+  if (status === 'active') {
+    return {
+      border: 'var(--gold)',
+      badge: 'badge-ancient',
+      label: 'Active',
+      icon: <Sparkles size={12} />,
+    };
+  }
+
+  return {
+    border: 'var(--border-stone)',
+    badge: 'badge-danger',
+    label: 'Locked',
+    icon: <LockKeyhole size={12} />,
+  };
+};
+
+const QuestPanel = ({ questChain }) => {
+  const stages = questChain?.stages || [];
+
   return (
-    <div className="flex-1 flex flex-col mt-4 min-h-0 border-t border-slate-800 pt-4">
-      <h2 className="text-[10px] uppercase font-mono tracking-widest text-slate-500 mb-3 flex items-center gap-2">
-        <AlertTriangle size={12} className="text-amber-500" /> 
-        Active Objectives
-      </h2>
-      
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
-        <AnimatePresence>
-          {quests.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-center py-6 text-slate-600 text-xs font-mono border border-slate-800 rounded-sm"
-            >
-              NO ACTIVE DIRECTIVES
-            </motion.div>
-          ) : (
-            quests.map((quest, idx) => (
-              <motion.div 
-                key={quest.id || idx}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="bg-black border-l-2 border-amber-500 border-t border-r border-b border-slate-800 p-3 relative"
+    <div className="space-y-3">
+      <div>
+        <p className="text-[0.65rem] uppercase tracking-[0.25em] mb-2 font-ancient" style={{ color: 'var(--gold)' }}>
+          World-Forged Quest Chain
+        </p>
+        <h3 className="text-base font-black uppercase tracking-wide" style={{ color: 'var(--text-parchment)' }}>
+          {questChain?.title || 'No forged quest yet'}
+        </h3>
+        <p className="text-sm italic mt-2 leading-relaxed" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+          {questChain?.arc || 'Choose a region on the map to forge a quest chain bound to that land.'}
+        </p>
+      </div>
+
+      <AnimatePresence>
+        {stages.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-md p-4 ancient-panel"
+            style={{ color: 'var(--text-dim)' }}
+          >
+            No active chain has been carved into the Tome.
+          </motion.div>
+        ) : (
+          stages.map((stage, idx) => {
+            const tone = stageTone(stage.status);
+            return (
+              <motion.div
+                key={stage.id || idx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="rounded-md p-4 ancient-panel"
+                style={{ borderLeft: `3px solid ${tone.border}` }}
               >
-                <h3 className="font-bold text-slate-200 text-xs uppercase tracking-wider flex items-start gap-2 mb-1">
-                  <Target size={12} className="text-amber-500 mt-0.5 shrink-0" />
-                  <span className="leading-tight">{quest.title}</span>
-                </h3>
-                
-                <p className="text-[10px] text-slate-500 font-mono leading-relaxed pl-5 mb-2">
-                  {quest.description}
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-start gap-2">
+                    <Target size={14} className="mt-1 shrink-0" style={{ color: tone.border }} />
+                    <div>
+                      <p className="text-[0.62rem] uppercase tracking-[0.18em] font-ancient" style={{ color: 'var(--text-dim)' }}>
+                        Stage {idx + 1} · {stage.kind}
+                      </p>
+                      <h4 className="text-sm font-bold uppercase tracking-wide" style={{ color: 'var(--text-parchment)' }}>
+                        {stage.title}
+                      </h4>
+                    </div>
+                  </div>
+                  <span className={`${tone.badge} flex items-center gap-1`}>
+                    {tone.icon}
+                    {tone.label}
+                  </span>
+                </div>
+
+                <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                  {stage.objective}
                 </p>
 
-                <div className="pl-5 flex items-center justify-between text-[8px] uppercase font-bold tracking-widest">
-                  <span className={`${quest.status === 'completed' ? 'text-green-500' : 'text-amber-500'}`}>
-                    {quest.status === 'completed' ? 'COMPLETED' : 'IN PROGRESS'}
-                  </span>
-                  {quest.status === 'completed' && <CheckCircle2 size={10} className="text-green-500" />}
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <div className="rounded-sm px-3 py-2" style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid var(--border-stone)' }}>
+                    <p className="text-[0.58rem] uppercase tracking-[0.16em] font-ancient mb-1" style={{ color: 'var(--gold)' }}>
+                      Hint
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                      {stage.hint}
+                    </p>
+                  </div>
+                  <div className="rounded-sm px-3 py-2" style={{ background: 'rgba(139,32,32,0.08)', border: '1px solid var(--blood)' }}>
+                    <p className="text-[0.58rem] uppercase tracking-[0.16em] font-ancient mb-1" style={{ color: 'var(--iron-red)' }}>
+                      Risk
+                    </p>
+                    <p className="text-xs" style={{ color: '#cfa6a6', fontFamily: 'Crimson Text, serif' }}>
+                      {stage.risk}
+                    </p>
+                  </div>
                 </div>
+
+                {stage.resolution && (
+                  <p className="text-xs mt-3 italic" style={{ color: 'var(--forest-light)', fontFamily: 'Crimson Text, serif' }}>
+                    {stage.resolution}
+                  </p>
+                )}
               </motion.div>
-            ))
-          )}
-        </AnimatePresence>
-      </div>
+            );
+          })
+        )}
+      </AnimatePresence>
+
+      {questChain?.reward && (
+        <div className="rounded-md p-4 ancient-panel">
+          <p className="text-[0.62rem] uppercase tracking-[0.18em] font-ancient mb-1" style={{ color: 'var(--gold)' }}>
+            Reward of the Region
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+            {questChain.reward}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

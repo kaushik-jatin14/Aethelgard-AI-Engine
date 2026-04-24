@@ -1,3 +1,5 @@
+import copy
+import hashlib
 import json
 import logging
 import os
@@ -48,6 +50,37 @@ VALID_LOCATIONS = [
 LOCATIONS_STR = ", ".join(VALID_LOCATIONS)
 EXHAUSTED_COMBOS = set()
 HELP_ACTIONS = {"LOGIN_GUEST", "LOGIN_PIN", "CREATE_PROFILE", "CHAT"}
+TRAVEL_WORDS = {"travel", "journey", "ride", "go", "move", "venture", "reach", "enter", "cross"}
+INVESTIGATION_WORDS = {"search", "investigate", "scout", "study", "inspect", "trace", "follow", "look"}
+CONFRONTATION_WORDS = {"fight", "battle", "strike", "slay", "defeat", "challenge", "confront", "seal", "recover", "claim"}
+
+REGION_PROFILES = {
+    "The Nexus Point": {"biome": "Runic crossroads", "threat": "Rune Wraiths", "faction": "Rift Scholars", "relic": "Nexus Sigil", "npc": "Archivist Selene", "danger": 3},
+    "Canyon of Whispers": {"biome": "Echoing blood canyon", "threat": "Echo Phantoms", "faction": "Whisperbound Dead", "relic": "War-echo Horn", "npc": "Captain Tharos", "danger": 4},
+    "Ruins of Oakhaven": {"biome": "Collapsed royal ruin", "threat": "Iron-masked soldiers", "faction": "Oakhaven Resistance", "relic": "Council Vault Seal", "npc": "Mira of the Ash", "danger": 4},
+    "The Ashen Wastes": {"biome": "Plague-scoured ashland", "threat": "Ash Golems", "faction": "Plague Survivors", "relic": "Ashen Censer", "npc": "Doctor Vael", "danger": 4},
+    "Crystal Caves": {"biome": "Resonant crystal caverns", "threat": "Void Shards", "faction": "Exiled Mages", "relic": "Memory Prism", "npc": "Lumen Vey", "danger": 3},
+    "The Crimson Peak": {"biome": "War-stained mountain", "threat": "Blood Harpies", "faction": "Peak Sentinels", "relic": "God-King Crown", "npc": "Marshal Korr", "danger": 4},
+    "Silent Marsh": {"biome": "Poisoned black swamp", "threat": "Swamp Dragon", "faction": "Marsh Folk", "relic": "Bogheart Totem", "npc": "Nami Reedmother", "danger": 4},
+    "The Obsidian Citadel": {"biome": "Dark king fortress", "threat": "Iron Sentinels", "faction": "Malachar's Legion", "relic": "Obsidian Command Key", "npc": "Warden Vark", "danger": 5},
+    "Forgotten Grove": {"biome": "Silver-leaf sanctuary", "threat": "Blight Sprites", "faction": "Forest Monks", "relic": "Worldsap Vial", "npc": "Sister Lyra", "danger": 2},
+    "The Iron Bridge": {"biome": "Abyssal crossing", "threat": "Chain Wraiths", "faction": "Toll-Master's Guard", "relic": "Bridge Tribute Ledger", "npc": "The Toll-Master", "danger": 3},
+    "Valley of Bones": {"biome": "Titan grave valley", "threat": "Revenant Kings", "faction": "Undead Host", "relic": "Vorkan Spine Rune", "npc": "Malakor's Herald", "danger": 5},
+    "The Weeping Falls": {"biome": "Upward silver cascades", "threat": "Time Fragments", "faction": "Future Monks", "relic": "Silver Oracle Drop", "npc": "Monk Auren", "danger": 3},
+    "Temple of the Void": {"biome": "Lightless void temple", "threat": "Void Creatures", "faction": "Mad Cultists", "relic": "Black Lantern Shard", "npc": "Seer Orun", "danger": 5},
+    "The Shimmering Sands": {"biome": "Crystal desert", "threat": "Glass Scorpions", "faction": "Nomad Caravans", "relic": "Sun Map Fragment", "npc": "Caravaner Sia", "danger": 3},
+    "Gloomwood Forest": {"biome": "Twilight blackwood", "threat": "Shadow Wolves", "faction": "Hidden Villagers", "relic": "Gloom Lantern", "npc": "Warden Edda", "danger": 4},
+    "The Howling Abyss": {"biome": "Meteor-fissure crater", "threat": "Sound Wraiths", "faction": "Deaf Hunters", "relic": "Abyss Resonator", "npc": "Hunter Bren", "danger": 5},
+    "Sanctuary of Light": {"biome": "Golden refuge plateau", "threat": "Barrier collapse", "faction": "Holy Knights", "relic": "Radiant Wardstone", "npc": "Sir Galahad", "danger": 2},
+    "The Molten Core": {"biome": "Divine forge volcano", "threat": "Fire Drakes", "faction": "Fire-Forged Dwarves", "relic": "Godforge Ember", "npc": "Forgequeen Brynn", "danger": 4},
+    "Frozen Tundra": {"biome": "Blizzard wasteland", "threat": "Frost Giants", "faction": "Frost Tribes", "relic": "World Tree Compass", "npc": "Kael Iceborne", "danger": 3},
+    "The Whispering Woods": {"biome": "Living memory forest", "threat": "Memory Phantoms", "faction": "Memory Keepers", "relic": "Archivist Bark", "npc": "The Archivist", "danger": 3},
+    "Dragon's Roost": {"biome": "Storm dragon peaks", "threat": "Ancient Dragons", "faction": "Storm Clan", "relic": "Tempest Scale", "npc": "Freya Stormborn", "danger": 4},
+    "The Sunken City": {"biome": "Drowned royal ruins", "threat": "Deep Leviathan", "faction": "Sunken Spirits", "relic": "Tear of the Depths", "npc": "Queen Neris", "danger": 4},
+    "The Clockwork Tower": {"biome": "Mechanical brass spire", "threat": "Clockwork Beasts", "faction": "Tower Intelligence", "relic": "Prime Gear Core", "npc": "Curator IX", "danger": 4},
+    "The Blightlands": {"biome": "Spreading decay frontier", "threat": "Blight Beasts", "faction": "Edge Survivors", "relic": "Cure Bloom Seed", "npc": "Healer Rowan", "danger": 5},
+    "The Final Gate": {"biome": "Stormbound divine arch", "threat": "Reality Distortions", "faction": "Gate Watchers", "relic": "Aethel Keystone", "npc": "Keeper Sol", "danger": 5},
+}
 
 
 class AIServiceError(Exception):
@@ -67,6 +100,90 @@ class GameActionRequest(BaseModel):
 
 class HelpChatRequest(BaseModel):
     question: str
+
+
+class WorldBuilderRequest(BaseModel):
+    currentState: dict = Field(default_factory=dict)
+    characterData: dict = Field(default_factory=dict)
+    theme: str | None = None
+    selectedRegion: str | None = None
+
+
+class QuestStageModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    kind: str
+    title: str
+    objective: str
+    hint: str = ""
+    risk: str = ""
+    status: str = "locked"
+    resolution: str = ""
+
+
+class QuestChainModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    region: str
+    title: str
+    arc: str
+    reward: str
+    urgency: str
+    stages: list[QuestStageModel] = Field(default_factory=list)
+
+
+class RegionIntelModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    location: str
+    region_title: str
+    biome: str
+    danger_level: int
+    controlling_force: str
+    current_state: str
+    quest_hook: str
+    notable_npc: str
+    relic: str
+    connections: list[str] = Field(default_factory=list)
+
+
+class StoryEntryModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    turn: int
+    location: str
+    action: str
+    consequence: str
+    tags: list[str] = Field(default_factory=list)
+
+
+class StoryMemoryModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    summary: str
+    story_flags: list[str] = Field(default_factory=list)
+    recent_consequences: list[str] = Field(default_factory=list)
+    chronicle: list[StoryEntryModel] = Field(default_factory=list)
+
+
+class WorldMapModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    theme: str
+    generated_via: str
+    world_summary: str
+    active_region: str
+    regions: list[RegionIntelModel] = Field(default_factory=list)
+    map_directives: list[str] = Field(default_factory=list)
+
+
+class WorldBuilderPayload(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    generated_map: WorldMapModel
+    quest_chain: QuestChainModel
+    story_memory: StoryMemoryModel
 
 
 class GameStateModel(BaseModel):
@@ -115,12 +232,7 @@ def get_runtime_status() -> dict:
     }
 
 
-def error_response(
-    code: str,
-    message: str,
-    status_code: int,
-    retryable: bool,
-) -> JSONResponse:
+def error_response(code: str, message: str, status_code: int, retryable: bool) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
@@ -210,6 +322,64 @@ OUTPUT RULES - Return ONLY this raw JSON (no markdown):
 {{"narrative":"2-4 poetic sentences. Bold **key words**. End with:\\n\\n**What will thou do?**\\n1. [choice]\\n2. [choice]\\n3. [choice]","new_state":{{"location":"exact name","inventory":[],"health":100,"quests":[],"health_change_reason":""}}}}"""
 
 
+def get_world_builder_prompt(theme: str, character: dict, current_state: dict, selected_region: str) -> str:
+    memory = normalize_story_memory(current_state.get("story_memory"))
+    active_region = selected_region if selected_region in VALID_LOCATIONS else current_state.get("location", "The Nexus Point")
+    return f"""You are the World-Forge of Aethelgard. Return ONLY valid JSON.
+
+Theme: {theme}
+Champion: {character.get("name", "Champion")} | {character.get("title", "")}
+Mission: {character.get("mission", "")}
+Active region: {active_region}
+Known memories: {json.dumps(memory)}
+Current state: {json.dumps(current_state)}
+
+Use only these exact region names: {LOCATIONS_STR}
+
+JSON contract:
+{{
+  "generated_map": {{
+    "theme": "string",
+    "generated_via": "ai-enhanced",
+    "world_summary": "2-3 sentence summary",
+    "active_region": "one valid location",
+    "map_directives": ["3 short design directions"],
+    "regions": [
+      {{
+        "location": "valid location",
+        "region_title": "short evocative title",
+        "biome": "string",
+        "danger_level": 1,
+        "controlling_force": "string",
+        "current_state": "string",
+        "quest_hook": "string",
+        "notable_npc": "string",
+        "relic": "string",
+        "connections": ["up to 3 valid locations"]
+      }}
+    ]
+  }},
+  "quest_chain": {{
+    "region": "valid location",
+    "title": "string",
+    "arc": "string",
+    "reward": "string",
+    "urgency": "string",
+    "stages": [
+      {{"id": "stage-1", "kind": "travel|investigate|confront", "title": "string", "objective": "string", "hint": "string", "risk": "string", "status": "active|locked|completed", "resolution": ""}}
+    ]
+  }},
+  "story_memory": {{
+    "summary": "2 sentence recap",
+    "story_flags": ["up to 5 short flags"],
+    "recent_consequences": ["up to 4 short lines"],
+    "chronicle": [
+      {{"turn": 1, "location": "valid location", "action": "string", "consequence": "string", "tags": ["string"]}}
+    ]
+  }}
+}}"""
+
+
 def call_gemini(api_key: str, system_instruction: str, prompt: str, model_name: str) -> str:
     client = genai.Client(api_key=api_key)
 
@@ -232,13 +402,7 @@ def call_gemini(api_key: str, system_instruction: str, prompt: str, model_name: 
     raise ValueError("Empty response from Gemini")
 
 
-def call_with_timeout(
-    api_key: str,
-    system_instruction: str,
-    prompt: str,
-    model_name: str,
-    timeout: int = 20,
-) -> str:
+def call_with_timeout(api_key: str, system_instruction: str, prompt: str, model_name: str, timeout: int = 20) -> str:
     result = {"text": None, "error": None}
 
     def worker() -> None:
@@ -309,7 +473,406 @@ def call_with_fallback(system_instruction: str, prompt: str) -> str:
     )
 
 
-def parse_game_action_payload(raw_text: str, current_state: dict) -> dict:
+def call_world_builder_ai(system_instruction: str, prompt: str) -> str:
+    raise_if_unconfigured()
+    keys = get_configured_keys()[:1]
+    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash-lite"]
+    last_error = None
+
+    for model in models_to_try:
+        for key_index, key in enumerate(keys):
+            try:
+                logger.info("World-builder trying model=%s key_index=%s", model, key_index)
+                return call_with_timeout(key, system_instruction, prompt, model, timeout=6)
+            except Exception as exc:
+                classified = classify_upstream_error(exc)
+                logger.warning(
+                    "World-builder AI failed model=%s key_index=%s code=%s detail=%s",
+                    model,
+                    key_index,
+                    classified.code,
+                    str(exc)[:160],
+                )
+                last_error = classified
+                if classified.code in {"AI_AUTH_INVALID", "AI_MODEL_UNAVAILABLE"}:
+                    break
+                time.sleep(0.2)
+
+    if last_error:
+        raise last_error
+
+    raise AIServiceError(
+        code="AI_UPSTREAM_FAILURE",
+        message="The World-Forge could not return a usable answer.",
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        retryable=True,
+    )
+
+
+def normalize_story_memory(value: dict | None) -> dict:
+    base = {
+        "summary": "No enduring consequences have been recorded yet.",
+        "story_flags": [],
+        "recent_consequences": [],
+        "chronicle": [],
+    }
+    if not isinstance(value, dict):
+        return base
+
+    normalized = {**base, **value}
+    normalized["story_flags"] = [str(flag) for flag in normalized.get("story_flags", [])][:8]
+    normalized["recent_consequences"] = [str(line) for line in normalized.get("recent_consequences", [])][-5:]
+    chronicle = []
+    for entry in normalized.get("chronicle", [])[-10:]:
+        if isinstance(entry, dict):
+            chronicle.append(
+                {
+                    "turn": int(entry.get("turn", len(chronicle) + 1)),
+                    "location": entry.get("location", "The Nexus Point"),
+                    "action": str(entry.get("action", "")),
+                    "consequence": str(entry.get("consequence", "")),
+                    "tags": [str(tag) for tag in entry.get("tags", [])][:4],
+                }
+            )
+    normalized["chronicle"] = chronicle
+    return normalized
+
+
+def derive_theme(character: dict, current_state: dict, requested_theme: str | None = None) -> str:
+    if requested_theme and requested_theme.strip():
+        return requested_theme.strip()
+
+    title = character.get("title", "Warden of Aethel")
+    mission = character.get("mission", "")
+    location = current_state.get("location", character.get("startLocation", "The Nexus Point"))
+    return f"{title} forged through {location}, pursuing {mission or 'the restoration of the shattered realm'}"
+
+
+def region_connections(location: str) -> list[str]:
+    index = VALID_LOCATIONS.index(location)
+    connections = {
+        VALID_LOCATIONS[(index - 1) % len(VALID_LOCATIONS)],
+        VALID_LOCATIONS[(index + 1) % len(VALID_LOCATIONS)],
+        VALID_LOCATIONS[(index + 5) % len(VALID_LOCATIONS)],
+    }
+    return [name for name in VALID_LOCATIONS if name in connections][:3]
+
+
+def stable_variant(seed: str, count: int) -> int:
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % count
+
+
+def build_region_intel(location: str, theme: str, character: dict) -> dict:
+    profile = REGION_PROFILES.get(location, REGION_PROFILES["The Nexus Point"])
+    title_variants = [
+        f"The {profile['relic']} Frontier",
+        f"The Siege of {location}",
+        f"The Omen of {location}",
+    ]
+    state_variants = [
+        f"{profile['faction']} are bracing for a fresh incursion.",
+        f"A hidden power is contesting the {profile['relic']}.",
+        f"Rumors say the land is reshaping itself around {character.get('name', 'the champion')}.",
+    ]
+    quest_variants = [
+        f"Secure the {profile['relic']} before {profile['threat']} can claim it.",
+        f"Earn the trust of {profile['npc']} and expose the next threat line.",
+        f"Uncover why {profile['faction']} believe this region is central to Aethel's restoration.",
+    ]
+    variant = stable_variant(f"{theme}:{location}:{character.get('name', '')}", 3)
+    return {
+        "location": location,
+        "region_title": title_variants[variant],
+        "biome": profile["biome"],
+        "danger_level": profile["danger"],
+        "controlling_force": profile["faction"],
+        "current_state": state_variants[variant],
+        "quest_hook": quest_variants[variant],
+        "notable_npc": profile["npc"],
+        "relic": profile["relic"],
+        "connections": region_connections(location),
+    }
+
+
+def build_default_story_flags(character: dict, region: str) -> list[str]:
+    return [
+        f"chosen-{character.get('name', 'champion').lower().replace(' ', '-')}",
+        f"current-region:{region}",
+        f"class:{character.get('title', 'wanderer').lower().replace(' ', '-')}",
+    ]
+
+
+def generate_deterministic_map(theme: str, character: dict, current_state: dict) -> dict:
+    active_region = current_state.get("location", character.get("startLocation", "The Nexus Point"))
+    region_payloads = [build_region_intel(location, theme, character) for location in VALID_LOCATIONS]
+    current_profile = REGION_PROFILES.get(active_region, REGION_PROFILES["The Nexus Point"])
+    mission = character.get("mission", "restore the balance of Aethelgard")
+
+    return {
+        "theme": theme,
+        "generated_via": "fallback-structured",
+        "world_summary": (
+            f"Aethelgard bends around {character.get('name', 'the champion')}, whose path now threads through "
+            f"{active_region} and the wider war against {current_profile['threat']}. "
+            f"Every region holds a relic, a faction, and a consequence tied to {mission}."
+        ),
+        "active_region": active_region,
+        "regions": region_payloads,
+        "map_directives": [
+            "Highlight the active region with a living quest pulse.",
+            "Show every region as a strategic node with danger, faction, and relic focus.",
+            "Treat the realm map as a campaign board, not a static illustration.",
+        ],
+    }
+
+
+def generate_deterministic_quest_chain(region: str, character: dict, current_state: dict) -> dict:
+    profile = REGION_PROFILES.get(region, REGION_PROFILES["The Nexus Point"])
+    class_title = character.get("title", "Wanderer")
+    weapon = character.get("weapon", "ancient steel")
+    mission = character.get("mission", "restore the realm")
+    quest_id_seed = region.lower().replace(" ", "-").replace("'", "")
+
+    return {
+        "region": region,
+        "title": f"The {profile['relic']} of {region}",
+        "arc": f"A three-part campaign through {region} where a {class_title} must outmaneuver {profile['threat']} and reshape the region's fate.",
+        "reward": f"{profile['relic']} attuned to {weapon}, plus leverage toward {mission}.",
+        "urgency": f"{profile['faction']} will lose ground unless the champion acts within the next turning of the realm.",
+        "stages": [
+            {
+                "id": f"{quest_id_seed}-travel",
+                "kind": "travel",
+                "title": f"Enter {region}",
+                "objective": f"Reach the heart of {region} and make contact with {profile['npc']}.",
+                "hint": f"Travel openly if you seek allies, or move cautiously if {profile['threat']} already control the roads.",
+                "risk": f"Approaching {region} alerts {profile['threat']}.",
+                "status": "active" if current_state.get("location") == region else "active",
+                "resolution": "",
+            },
+            {
+                "id": f"{quest_id_seed}-investigate",
+                "kind": "investigate",
+                "title": f"Uncover the fate of the {profile['relic']}",
+                "objective": f"Investigate why {profile['faction']} fear the loss of the {profile['relic']}.",
+                "hint": f"Question {profile['npc']} and search for signs of hidden interference.",
+                "risk": "False clues may bind the region to a darker future.",
+                "status": "locked",
+                "resolution": "",
+            },
+            {
+                "id": f"{quest_id_seed}-confront",
+                "kind": "confront",
+                "title": f"Decide the region's consequence",
+                "objective": f"Confront {profile['threat']} and claim the {profile['relic']} in a way that changes the realm.",
+                "hint": "Choose whether to destroy, bind, or redeem what holds the land in crisis.",
+                "risk": "A rash victory may scar the wider campaign.",
+                "status": "locked",
+                "resolution": "",
+            },
+        ],
+    }
+
+
+def generate_memory_summary(memory: dict, active_region: str) -> str:
+    if not memory["chronicle"]:
+        return f"The campaign has just begun in {active_region}; no permanent choices have been etched into the realm."
+
+    recent = memory["chronicle"][-3:]
+    joined = "; ".join(f"Turn {entry['turn']}: {entry['consequence']}" for entry in recent)
+    return f"The realm remembers {joined} Active region influence now centers on {active_region}."
+
+
+def generate_deterministic_world_payload(current_state: dict, character: dict, theme: str, selected_region: str | None = None) -> dict:
+    region = selected_region if selected_region in VALID_LOCATIONS else current_state.get("location", character.get("startLocation", "The Nexus Point"))
+    story_memory = normalize_story_memory(current_state.get("story_memory"))
+    if not story_memory["story_flags"]:
+        story_memory["story_flags"] = build_default_story_flags(character, region)
+    story_memory["summary"] = generate_memory_summary(story_memory, region)
+    world_map = generate_deterministic_map(theme, character, {**current_state, "location": region})
+    quest_chain = generate_deterministic_quest_chain(region, character, current_state)
+    return {
+        "generated_map": world_map,
+        "quest_chain": quest_chain,
+        "story_memory": story_memory,
+    }
+
+
+def sanitize_world_payload(payload: dict, baseline: dict) -> dict:
+    generated_map = payload.get("generated_map", {})
+    candidate_regions = generated_map.get("regions", [])
+    sanitized_regions = []
+    baseline_regions = {region["location"]: region for region in baseline["generated_map"]["regions"]}
+    for region in candidate_regions:
+        location = region.get("location")
+        if location not in baseline_regions:
+            continue
+        merged = {**baseline_regions[location], **region}
+        merged["connections"] = [name for name in merged.get("connections", []) if name in VALID_LOCATIONS][:3]
+        merged["danger_level"] = max(1, min(5, int(merged.get("danger_level", baseline_regions[location]["danger_level"]))))
+        sanitized_regions.append(merged)
+
+    if len(sanitized_regions) < len(VALID_LOCATIONS) // 2:
+        sanitized_regions = list(baseline_regions.values())
+
+    quest_chain = payload.get("quest_chain", {})
+    baseline_chain = baseline["quest_chain"]
+    merged_chain = {**baseline_chain, **quest_chain}
+    merged_chain["region"] = merged_chain.get("region") if merged_chain.get("region") in VALID_LOCATIONS else baseline_chain["region"]
+    stages = []
+    for index, stage in enumerate(merged_chain.get("stages", [])):
+        if not isinstance(stage, dict):
+            continue
+        baseline_stage = baseline_chain["stages"][min(index, len(baseline_chain["stages"]) - 1)]
+        merged_stage = {**baseline_stage, **stage}
+        merged_stage["status"] = merged_stage.get("status", baseline_stage["status"])
+        if merged_stage["status"] not in {"active", "locked", "completed"}:
+            merged_stage["status"] = baseline_stage["status"]
+        stages.append(merged_stage)
+    if not stages:
+        stages = baseline_chain["stages"]
+    merged_chain["stages"] = stages[:3]
+
+    story_memory = normalize_story_memory({**baseline["story_memory"], **payload.get("story_memory", {})})
+
+    return {
+        "generated_map": {
+            **baseline["generated_map"],
+            **generated_map,
+            "active_region": generated_map.get("active_region") if generated_map.get("active_region") in VALID_LOCATIONS else baseline["generated_map"]["active_region"],
+            "regions": sanitized_regions,
+            "map_directives": [str(item) for item in generated_map.get("map_directives", baseline["generated_map"]["map_directives"])][:4],
+        },
+        "quest_chain": merged_chain,
+        "story_memory": story_memory,
+    }
+
+
+def build_world_payload(current_state: dict, character: dict, theme: str, selected_region: str | None = None) -> dict:
+    baseline = generate_deterministic_world_payload(current_state, character, theme, selected_region)
+    if not get_runtime_status()["ai_configured"]:
+        return baseline
+
+    try:
+        system_instruction = "You are the Aethelgard World-Forge. Respond only with valid JSON following the requested schema."
+        prompt = get_world_builder_prompt(theme, character, current_state, selected_region or baseline["generated_map"]["active_region"])
+        raw = call_world_builder_ai(system_instruction, prompt)
+        parsed = json.loads(raw)
+        validated = WorldBuilderPayload.model_validate(parsed).model_dump()
+        merged = sanitize_world_payload(validated, baseline)
+        merged["generated_map"]["generated_via"] = "ai-enhanced"
+        return merged
+    except (AIServiceError, json.JSONDecodeError, ValidationError) as exc:
+        logger.warning("World builder fell back to deterministic payload: %s", exc)
+        return baseline
+
+
+def summarize_consequence(player_action: str, previous_state: dict, new_state: dict) -> str:
+    previous_location = previous_state.get("location", "The Nexus Point")
+    current_location = new_state.get("location", previous_location)
+    previous_health = int(previous_state.get("health", 100) or 100)
+    current_health = int(new_state.get("health", previous_health) or previous_health)
+    health_delta = current_health - previous_health
+
+    if current_location != previous_location:
+        return f"Moved from {previous_location} to {current_location} after choosing to {player_action.lower()}."
+    if health_delta < 0:
+        return f"Risk followed the action '{player_action}' and cost {abs(health_delta)} vitality."
+    if health_delta > 0:
+        return f"The action '{player_action}' restored {health_delta} vitality and shifted momentum."
+    return f"The choice '{player_action}' changed the campaign's tone at {current_location}."
+
+
+def extract_tags(player_action: str, narrative: str, location: str) -> list[str]:
+    haystack = f"{player_action} {narrative} {location}".lower()
+    tags = []
+    for keyword in ["dragon", "void", "memory", "relic", "light", "blight", "king", "gate", "shadow", "forge"]:
+        if keyword in haystack:
+            tags.append(keyword)
+    if not tags:
+        tags.append(location.lower().replace(" ", "-"))
+    return tags[:4]
+
+
+def advance_story_memory(current_state: dict, new_state: dict, player_action: str, narrative: str) -> dict:
+    previous = normalize_story_memory(current_state.get("story_memory"))
+    turn = int(current_state.get("turn_count", 0) or 0) + 1
+    consequence = summarize_consequence(player_action, current_state, new_state)
+    location = new_state.get("location", current_state.get("location", "The Nexus Point"))
+    entry = {
+        "turn": turn,
+        "location": location,
+        "action": player_action,
+        "consequence": consequence,
+        "tags": extract_tags(player_action, narrative, location),
+    }
+    chronicle = (previous["chronicle"] + [entry])[-8:]
+    flags = list(dict.fromkeys(previous["story_flags"] + [f"current-region:{location}"] + entry["tags"]))[-8:]
+    consequences = (previous["recent_consequences"] + [consequence])[-4:]
+    updated = {
+        "summary": "",
+        "story_flags": flags,
+        "recent_consequences": consequences,
+        "chronicle": chronicle,
+    }
+    updated["summary"] = generate_memory_summary(updated, location)
+    return updated
+
+
+def advance_quest_chain(existing_chain: dict | None, player_action: str, previous_location: str, new_location: str) -> dict | None:
+    if not isinstance(existing_chain, dict) or not existing_chain.get("stages"):
+        return existing_chain
+
+    chain = copy.deepcopy(existing_chain)
+    action_words = set(player_action.lower().split())
+    for index, stage in enumerate(chain["stages"]):
+        if stage.get("status") != "active":
+            continue
+
+        should_complete = False
+        if stage.get("kind") == "travel":
+            should_complete = new_location == chain.get("region") or bool(action_words & TRAVEL_WORDS)
+        elif stage.get("kind") == "investigate":
+            should_complete = new_location == chain.get("region") and bool(action_words & INVESTIGATION_WORDS)
+        elif stage.get("kind") == "confront":
+            should_complete = bool(action_words & CONFRONTATION_WORDS)
+
+        if should_complete:
+            stage["status"] = "completed"
+            stage["resolution"] = f"Marked complete after the action '{player_action}'."
+            if index + 1 < len(chain["stages"]) and chain["stages"][index + 1].get("status") != "completed":
+                chain["stages"][index + 1]["status"] = "active"
+            break
+
+    return chain
+
+
+def merge_world_state(current_state: dict, new_state: dict, player_action: str, narrative: str, character: dict) -> dict:
+    merged = {**current_state, **new_state}
+    merged["location"] = merged.get("location", current_state.get("location", "The Nexus Point"))
+    merged["turn_count"] = int(current_state.get("turn_count", 0) or 0) + 1
+    merged["active_region"] = merged["location"]
+    merged["story_memory"] = advance_story_memory(current_state, merged, player_action, narrative)
+
+    world_map = current_state.get("world_map")
+    if not isinstance(world_map, dict):
+        world_map = generate_deterministic_map(derive_theme(character, current_state), character, merged)
+    world_map["active_region"] = merged["location"]
+    merged["world_map"] = world_map
+
+    if current_state.get("quest_chain"):
+        merged["quest_chain"] = advance_quest_chain(
+            current_state.get("quest_chain"),
+            player_action,
+            current_state.get("location", "The Nexus Point"),
+            merged["location"],
+        )
+
+    return merged
+
+
+def parse_game_action_payload(raw_text: str, current_state: dict, player_action: str, character: dict) -> dict:
     try:
         parsed = json.loads(raw_text)
     except json.JSONDecodeError as exc:
@@ -334,10 +897,12 @@ def parse_game_action_payload(raw_text: str, current_state: dict) -> dict:
     if new_state.get("location") not in VALID_LOCATIONS:
         new_state["location"] = current_state.get("location", "The Nexus Point")
 
+    merged_state = merge_world_state(current_state, new_state, player_action, validated.narrative, character)
+
     return {
         "ok": True,
         "narrative": validated.narrative,
-        "new_state": new_state,
+        "new_state": merged_state,
     }
 
 
@@ -373,7 +938,7 @@ async def generate_action(req: GameActionRequest):
         system_instruction = get_system_prompt(req.characterData)
         prompt = f'PLAYER ACTION: "{req.playerAction}"\nSTATE: {json.dumps(req.currentState)}'
         raw = call_with_fallback(system_instruction, prompt)
-        return parse_game_action_payload(raw, req.currentState)
+        return parse_game_action_payload(raw, req.currentState, req.playerAction, req.characterData)
     except AIServiceError as exc:
         return error_response(exc.code, exc.message, exc.status_code, exc.retryable)
     except Exception as exc:  # pragma: no cover - safety net
@@ -415,3 +980,18 @@ async def generate_help_response(req: HelpChatRequest):
             status.HTTP_502_BAD_GATEWAY,
             True,
         )
+
+
+@router.post("/world-builder")
+async def build_world(req: WorldBuilderRequest):
+    try:
+        theme = derive_theme(req.characterData, req.currentState, req.theme)
+        payload = build_world_payload(req.currentState, req.characterData, theme, req.selectedRegion)
+        payload["ok"] = True
+        return payload
+    except Exception as exc:  # pragma: no cover - safety net
+        logger.exception("Unexpected world-builder failure: %s", exc)
+        fallback = generate_deterministic_world_payload(req.currentState, req.characterData, derive_theme(req.characterData, req.currentState, req.theme), req.selectedRegion)
+        fallback["ok"] = True
+        fallback["generated_map"]["generated_via"] = "fallback-recovery"
+        return fallback

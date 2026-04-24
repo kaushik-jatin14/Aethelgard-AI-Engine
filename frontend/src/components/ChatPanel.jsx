@@ -137,7 +137,8 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
               {[
                 { label: "I know not what to do", action: "I don't know what to do. Guide me, Oracle." },
                 { label: "My backstory", action: "Tell me my backstory and who I am in this realm." },
-                { label: "The endgame", action: "What is the endgame? How do I end this?" },
+                { label: "Map omen", action: "What does this region reveal about the world map and its hidden connections?" },
+                { label: "Past choices", action: "Recall the consequences of my recent choices and what they mean now." },
               ].map((q) => (
                 <button key={q.label} onClick={() => handleQuickAction(q.action)}
                   disabled={isProcessing}

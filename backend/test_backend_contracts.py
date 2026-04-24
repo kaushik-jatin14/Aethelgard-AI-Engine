@@ -43,6 +43,8 @@ class BackendContractTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["ok"])
         self.assertIn("narrative", response.json())
+        self.assertIn("story_memory", response.json()["new_state"])
+        self.assertIn("world_map", response.json()["new_state"])
 
     def test_game_action_timeout_error_contract(self):
         request_body = {
@@ -69,6 +71,23 @@ class BackendContractTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 502)
         self.assertEqual(response.json()["code"], "AI_BAD_RESPONSE")
+
+    def test_world_builder_returns_structured_payload(self):
+        request_body = {
+            "currentState": {"location": "The Nexus Point", "story_memory": {"summary": "", "story_flags": [], "recent_consequences": [], "chronicle": []}},
+            "characterData": {"name": "Test", "title": "Rune Knight", "mission": "restore the gate"},
+            "selectedRegion": "The Nexus Point",
+        }
+
+        response = self.client.post("/api/world-builder", json=request_body)
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertTrue(body["ok"])
+        self.assertIn("generated_map", body)
+        self.assertIn("quest_chain", body)
+        self.assertIn("story_memory", body)
+        self.assertEqual(body["quest_chain"]["region"], "The Nexus Point")
 
     def test_frontend_route_falls_back_to_index(self):
         response = self.client.get("/some/non-existent/front-end-route")
