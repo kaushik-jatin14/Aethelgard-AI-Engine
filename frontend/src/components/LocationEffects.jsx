@@ -72,7 +72,7 @@ const useParticles = (count, key) => {
 // ================================================================
 // MAIN EFFECTS COMPONENT
 // ================================================================
-const LocationEffects = ({ atmosphere, locationName, isProcessing }) => {
+const LocationEffects = ({ atmosphere, locationName, isProcessing, dynamicScene = null }) => {
   const particles = useRef({});
   if (!particles.current[atmosphere]) {
     particles.current[atmosphere] = {
@@ -90,6 +90,12 @@ const LocationEffects = ({ atmosphere, locationName, isProcessing }) => {
     locationName.includes('Molten') || locationName.includes('Howling') ||
     locationName.includes('Obsidian')
   );
+  const mood = dynamicScene?.visual_mood || 'watchful';
+  const tension = dynamicScene?.tension || 35;
+  const weather = (dynamicScene?.weather || '').toLowerCase();
+  const weatherStorm = weather.includes('storm') || weather.includes('static') || weather.includes('pressure');
+  const weatherFog = weather.includes('mist') || weather.includes('fog') || weather.includes('ash');
+  const weatherSpark = weather.includes('spark') || weather.includes('resonance') || weather.includes('shard');
 
   return (
     <motion.div
@@ -196,6 +202,50 @@ const LocationEffects = ({ atmosphere, locationName, isProcessing }) => {
           className="absolute inset-0 bg-amber-800/15 mix-blend-screen"
           animate={{ opacity: [0, 0.4, 0] }}
           transition={{ duration: 0.25, repeat: Infinity }}
+        />
+      )}
+
+      {weatherStorm && (
+        <motion.div
+          className="absolute inset-0 bg-sky-200/10 mix-blend-screen"
+          animate={{ opacity: [0, 0.18, 0, 0.28, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+
+      {weatherFog && (
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to top, rgba(160, 150, 140, 0.14) 0%, transparent 55%, rgba(40,40,40,0.12) 100%)' }}
+          animate={{ opacity: [0.3, 0.62, 0.3] }}
+          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+
+      {weatherSpark && (
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(circle at 50% 50%, rgba(112, 194, 255, 0.18), transparent 55%)' }}
+          animate={{ scale: [0.94, 1.08, 0.94], opacity: [0.15, 0.45, 0.15] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+
+      {mood === 'cataclysmic' && (
+        <motion.div
+          className="absolute inset-0"
+          style={{ boxShadow: 'inset 0 0 180px rgba(120, 0, 40, 0.45)' }}
+          animate={{ opacity: [0.45, 0.85, 0.45] }}
+          transition={{ duration: 2.4, repeat: Infinity }}
+        />
+      )}
+
+      {tension >= 75 && (
+        <motion.div
+          className="absolute inset-0"
+          style={{ border: '1px solid rgba(210, 71, 36, 0.2)' }}
+          animate={{ opacity: [0.15, 0.55, 0.15] }}
+          transition={{ duration: 2.8, repeat: Infinity }}
         />
       )}
 

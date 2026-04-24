@@ -45,6 +45,7 @@ class BackendContractTests(unittest.TestCase):
         self.assertIn("narrative", response.json())
         self.assertIn("story_memory", response.json()["new_state"])
         self.assertIn("world_map", response.json()["new_state"])
+        self.assertIn("dynamic_scene", response.json()["new_state"])
 
     def test_game_action_timeout_error_contract(self):
         request_body = {
@@ -87,6 +88,7 @@ class BackendContractTests(unittest.TestCase):
         self.assertIn("generated_map", body)
         self.assertIn("quest_chain", body)
         self.assertIn("story_memory", body)
+        self.assertIn("dynamic_scene", body)
         self.assertEqual(body["quest_chain"]["region"], "The Nexus Point")
 
     def test_frontend_route_falls_back_to_index(self):

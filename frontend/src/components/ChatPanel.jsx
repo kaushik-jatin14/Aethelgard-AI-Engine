@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterName, characterImage, characterFilter, serviceBanner }) => {
+const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterName, characterImage, characterFilter, serviceBanner, dynamicScene = null }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -150,8 +150,36 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
             </div>
 
             {/* ── Messages ── */}
+            {dynamicScene?.route_options?.length > 0 && (
+              <div className="relative flex flex-wrap gap-2 px-4 py-3 border-b"
+                style={{ borderColor: 'var(--border-stone)', background: 'rgba(18,12,8,0.95)' }}>
+                <p className="w-full text-[0.6rem] uppercase tracking-[0.18em] font-ancient" style={{ color: 'var(--gold)' }}>
+                  Live Oracle Routes
+                </p>
+                {dynamicScene.route_options.map((route) => (
+                  <button key={route} onClick={() => handleQuickAction(route)}
+                    disabled={isProcessing}
+                    className="text-xs px-3 py-1.5 rounded transition-all hover:opacity-80 font-ancient uppercase disabled:opacity-40"
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-stone)', color: 'var(--text-parchment)', letterSpacing: '0.05em' }}>
+                    {route}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="relative flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar"
               style={{ background: 'var(--bg-dark)' }}>
+              {dynamicScene && (
+                <div className="p-3 border rounded-md" style={{ background: 'rgba(20,14,8,0.35)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}>
+                  <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'var(--gold)' }}>
+                    Scene Feed
+                  </p>
+                  <p className="text-sm mt-1 font-lore">{dynamicScene.turn_title}</p>
+                  <p className="text-xs mt-1 font-lore italic" style={{ color: 'var(--text-dim)' }}>
+                    {dynamicScene.ambient_cue}
+                  </p>
+                </div>
+              )}
               {serviceBanner && (
                 <div className="p-3 border rounded-md" style={{ background: 'rgba(90,18,18,0.32)', borderColor: 'var(--blood)', color: '#f2dada' }}>
                   <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'var(--gold)' }}>

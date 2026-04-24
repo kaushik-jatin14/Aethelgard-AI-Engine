@@ -27,6 +27,23 @@ const INITIAL_GAME_STATE = {
     recent_consequences: [],
     chronicle: [],
   },
+  dynamic_scene: {
+    turn_title: 'Whispers over The Nexus Point',
+    visual_mood: 'watchful',
+    weather: 'runic dust spirals',
+    ambient_cue: 'Low chants and distant iron creaks.',
+    objective_focus: 'Read the omens surrounding The Nexus Point.',
+    hazard: 'Unknown movement beyond the immediate path.',
+    world_shift: 'The realm is testing the edges of The Nexus Point.',
+    tension: 35,
+    threat_level: 2,
+    route_options: [
+      'Scout the hidden paths around The Nexus Point.',
+      'Question the locals tied to The Nexus Point.',
+      'Prepare for the next omen before pressing deeper.',
+    ],
+    cinematic_tags: ['watchful', 'embers', 'oracle-feed'],
+  },
   active_region: 'The Nexus Point',
   turn_count: 0,
 };
@@ -46,6 +63,7 @@ const mergeBuilderResponse = (baseState, payload) => ({
   world_map: payload?.generated_map || baseState.world_map,
   quest_chain: payload?.quest_chain || baseState.quest_chain,
   story_memory: payload?.story_memory || baseState.story_memory,
+  dynamic_scene: payload?.dynamic_scene || baseState.dynamic_scene,
   active_region: payload?.generated_map?.active_region || payload?.quest_chain?.region || baseState.location,
 });
 
@@ -160,6 +178,15 @@ function App() {
       active_region: startLoc,
       turn_count: 0,
       story_memory: INITIAL_GAME_STATE.story_memory,
+      dynamic_scene: {
+        ...INITIAL_GAME_STATE.dynamic_scene,
+        objective_focus: `Enter ${startLoc} and awaken thy first omen.`,
+        route_options: [
+          `Seek the first omen in ${startLoc}.`,
+          `Question the sentries and witnesses in ${startLoc}.`,
+          `Move cautiously and read the danger surrounding ${startLoc}.`,
+        ],
+      },
       world_map: null,
       quest_chain: null,
     };
@@ -250,6 +277,7 @@ function App() {
   const chronicle = gameState.story_memory?.chronicle || [];
   const recentFlags = gameState.story_memory?.story_flags || [];
   const currentRegionIntel = regionIntelByName[gameState.location];
+  const dynamicScene = gameState.dynamic_scene || INITIAL_GAME_STATE.dynamic_scene;
 
   const renderScreen = () => {
     if (appState === 'LOGIN') {
@@ -401,7 +429,50 @@ function App() {
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)] bg-[var(--bg-deepest)]"
           >
-            <EnvironmentViewer location={gameState.location} isProcessing={isProcessing} />
+            <EnvironmentViewer location={gameState.location} isProcessing={isProcessing} dynamicScene={dynamicScene} />
+
+            <AnimatePresence>
+              {dynamicScene && (
+                <motion.div
+                  initial={{ opacity: 0, x: -18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
+                  className="absolute top-6 left-6 max-w-md px-5 py-4 rounded-md shadow-2xl border"
+                  style={{ background: 'rgba(15, 11, 6, 0.86)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}
+                >
+                  <p className="text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+                    <Sparkles size={12} />
+                    Live Scene Director
+                  </p>
+                  <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
+                    {dynamicScene.turn_title}
+                  </p>
+                  <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                    {dynamicScene.world_shift}
+                  </p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="text-[0.55rem] uppercase tracking-[0.14em] mb-1" style={{ color: 'var(--text-dim)' }}>
+                        Tension
+                      </p>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(30,20,10,0.8)' }}>
+                        <motion.div
+                          className="h-full"
+                          animate={{ width: `${dynamicScene.tension || 0}%` }}
+                          transition={{ duration: 0.7 }}
+                          style={{
+                            background: (dynamicScene.tension || 0) >= 70
+                              ? 'linear-gradient(90deg, #7a1010, #d24724)'
+                              : 'linear-gradient(90deg, #876229, #d1a049)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <span className="badge-ancient">Threat {dynamicScene.threat_level}/5</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <AnimatePresence>
               {serviceBanner && (
@@ -482,6 +553,33 @@ function App() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <AnimatePresence>
+              {dynamicScene?.route_options?.length > 0 && !isProcessing && (
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 18 }}
+                  className="absolute left-6 right-6 bottom-24 z-20 grid grid-cols-1 md:grid-cols-3 gap-3"
+                >
+                  {dynamicScene.route_options.map((route) => (
+                    <button
+                      key={route}
+                      {...withSounds({ onClick: () => handlePlayerAction(route) })}
+                      className="text-left px-4 py-3 rounded-md shadow-2xl transition-all hover:-translate-y-1"
+                      style={{ background: 'rgba(12, 8, 5, 0.82)', border: '1px solid var(--border-stone)', color: 'var(--text-parchment)' }}
+                    >
+                      <p className="text-[0.58rem] uppercase tracking-[0.16em] mb-1" style={{ color: 'var(--gold)' }}>
+                        Dynamic Route
+                      </p>
+                      <p className="text-sm leading-relaxed" style={{ fontFamily: 'Crimson Text, serif' }}>
+                        {route}
+                      </p>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
 
@@ -525,6 +623,36 @@ function App() {
                 </div>
 
                 <QuestPanel questChain={gameState.quest_chain} />
+
+                <div className="divider-ancient" />
+
+                <div className="rounded-md p-4 ancient-panel">
+                  <p className="text-[0.62rem] uppercase tracking-[0.18em] font-ancient mb-2 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+                    <ScrollText size={13} />
+                    Dynamic Oracle State
+                  </p>
+                  <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
+                    {dynamicScene.turn_title}
+                  </p>
+                  <p className="text-sm mt-2" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                    {dynamicScene.ambient_cue}
+                  </p>
+                  <div className="grid grid-cols-1 gap-2 mt-3 text-xs">
+                    <div>
+                      <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Objective Focus</p>
+                      <p style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>{dynamicScene.objective_focus}</p>
+                    </div>
+                    <div>
+                      <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Hazard</p>
+                      <p style={{ color: '#e3b4b4', fontFamily: 'Crimson Text, serif' }}>{dynamicScene.hazard}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {(dynamicScene.cinematic_tags || []).map((tag) => (
+                        <span key={tag} className="badge-ancient">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="divider-ancient" />
 
@@ -658,6 +786,7 @@ function App() {
           characterImage={character?.image}
           characterFilter={character?.fantasyFilter}
           serviceBanner={serviceBanner}
+          dynamicScene={dynamicScene}
         />
 
         <SettingsPanel

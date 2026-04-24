@@ -167,6 +167,22 @@ class StoryMemoryModel(BaseModel):
     chronicle: list[StoryEntryModel] = Field(default_factory=list)
 
 
+class SceneDirectorModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    turn_title: str
+    visual_mood: str
+    weather: str
+    ambient_cue: str
+    objective_focus: str
+    hazard: str
+    world_shift: str
+    tension: int = 35
+    threat_level: int = 2
+    route_options: list[str] = Field(default_factory=list)
+    cinematic_tags: list[str] = Field(default_factory=list)
+
+
 class WorldMapModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -184,6 +200,7 @@ class WorldBuilderPayload(BaseModel):
     generated_map: WorldMapModel
     quest_chain: QuestChainModel
     story_memory: StoryMemoryModel
+    dynamic_scene: SceneDirectorModel
 
 
 class GameStateModel(BaseModel):
@@ -376,6 +393,19 @@ JSON contract:
     "chronicle": [
       {{"turn": 1, "location": "valid location", "action": "string", "consequence": "string", "tags": ["string"]}}
     ]
+  }},
+  "dynamic_scene": {{
+    "turn_title": "short evolving scene title",
+    "visual_mood": "watchful|tense|volatile|cataclysmic|resolute",
+    "weather": "short atmospheric condition",
+    "ambient_cue": "1 sentence sensory cue",
+    "objective_focus": "short objective focus",
+    "hazard": "1 sentence warning",
+    "world_shift": "1 sentence describing how the world is changing",
+    "tension": 1,
+    "threat_level": 1,
+    "route_options": ["3 concise route prompts"],
+    "cinematic_tags": ["up to 5 short tags"]
   }}
 }}"""
 
@@ -538,6 +568,37 @@ def normalize_story_memory(value: dict | None) -> dict:
     return normalized
 
 
+def normalize_dynamic_scene(value: dict | None, location: str = "The Nexus Point") -> dict:
+    base = {
+        "turn_title": f"Whispers over {location}",
+        "visual_mood": "watchful",
+        "weather": "ashen wind",
+        "ambient_cue": "Low chants and distant iron creaks.",
+        "objective_focus": f"Read the omens surrounding {location}.",
+        "hazard": "Unknown movement beyond the immediate path.",
+        "world_shift": f"The realm is testing the edges of {location}.",
+        "tension": 35,
+        "threat_level": 2,
+        "route_options": [
+            f"Scout the hidden paths around {location}.",
+            f"Question the locals tied to {location}.",
+            f"Prepare for the next omen before pressing deeper.",
+        ],
+        "cinematic_tags": ["watchful", "embers", "oracle-feed"],
+    }
+    if not isinstance(value, dict):
+        return base
+
+    normalized = {**base, **value}
+    normalized["tension"] = max(0, min(100, int(normalized.get("tension", base["tension"]) or base["tension"])))
+    normalized["threat_level"] = max(1, min(5, int(normalized.get("threat_level", base["threat_level"]) or base["threat_level"])))
+    normalized["route_options"] = [str(item) for item in normalized.get("route_options", []) if str(item).strip()][:3] or base["route_options"]
+    normalized["cinematic_tags"] = [str(item) for item in normalized.get("cinematic_tags", []) if str(item).strip()][:5] or base["cinematic_tags"]
+    for key in ["turn_title", "visual_mood", "weather", "ambient_cue", "objective_focus", "hazard", "world_shift"]:
+        normalized[key] = str(normalized.get(key, base[key]))
+    return normalized
+
+
 def derive_theme(character: dict, current_state: dict, requested_theme: str | None = None) -> str:
     if requested_theme and requested_theme.strip():
         return requested_theme.strip()
@@ -684,6 +745,99 @@ def generate_memory_summary(memory: dict, active_region: str) -> str:
     return f"The realm remembers {joined} Active region influence now centers on {active_region}."
 
 
+def derive_scene_director(current_state: dict, character: dict, location: str, player_action: str = "", narrative: str = "") -> dict:
+    profile = REGION_PROFILES.get(location, REGION_PROFILES["The Nexus Point"])
+    memory = normalize_story_memory(current_state.get("story_memory"))
+    lower_action = (player_action or "").lower()
+    lower_narrative = (narrative or "").lower()
+    combined = f"{lower_action} {lower_narrative}"
+
+    turn_count = max(1, int(current_state.get("turn_count", 0) or 0))
+    base_tension = 28 + (profile["danger"] * 9)
+    if any(word in combined for word in TRAVEL_WORDS):
+        base_tension += 6
+    if any(word in combined for word in INVESTIGATION_WORDS):
+        base_tension += 10
+    if any(word in combined for word in CONFRONTATION_WORDS):
+        base_tension += 18
+    if "void" in combined or "gate" in combined:
+        base_tension += 8
+    if int(current_state.get("health", 100) or 100) < 55:
+        base_tension += 8
+    tension = max(15, min(100, base_tension))
+
+    weather_options = {
+        "Runic crossroads": "runic dust spirals",
+        "Echoing blood canyon": "whisperstorms along the cliff face",
+        "Collapsed royal ruin": "falling ash through broken halls",
+        "Plague-scoured ashland": "toxic cinder gusts",
+        "Resonant crystal caverns": "shardlight resonance waves",
+        "War-stained mountain": "iron sleet over shattered rock",
+        "Poisoned black swamp": "venom mist over dark reeds",
+        "Dark king fortress": "obsidian static around the walls",
+        "Silver-leaf sanctuary": "soft luminous pollen",
+        "Abyssal crossing": "chain-rattling winds",
+        "Titan grave valley": "bone dust squalls",
+        "Upward silver cascades": "reversed silver spray",
+        "Lightless void temple": "void static and cold bloom",
+        "Crystal desert": "glass-sand mirages",
+        "Twilight blackwood": "shadow fog across the roots",
+        "Meteor-fissure crater": "howling pressure waves",
+        "Golden refuge plateau": "warm sanctum rays",
+        "Divine forge volcano": "molten ember rain",
+        "Blizzard wasteland": "knife-cold snowfall",
+        "Living memory forest": "memory motes drifting sideways",
+        "Storm dragon peaks": "stormflash across the roost",
+        "Drowned royal ruins": "tidal ghost mist",
+        "Mechanical brass spire": "clockwork vapor pulses",
+        "Spreading decay frontier": "blight spores riding the wind",
+        "Stormbound divine arch": "reality sparks across the gate",
+    }
+
+    mood = "watchful"
+    if tension >= 80:
+        mood = "cataclysmic"
+    elif tension >= 65:
+        mood = "volatile"
+    elif tension >= 50:
+        mood = "tense"
+    elif "light" in combined or "heal" in combined:
+        mood = "resolute"
+
+    active_chain = current_state.get("quest_chain") or {}
+    active_stage = next((stage for stage in active_chain.get("stages", []) if stage.get("status") == "active"), None)
+    recent_consequence = memory.get("recent_consequences", [])[-1] if memory.get("recent_consequences") else f"{location} waits for a decisive move."
+
+    route_options = [
+        active_stage.get("objective") if active_stage else f"Move on {profile['relic']} before {profile['threat']} regain initiative.",
+        f"Seek {profile['npc']} to learn how {profile['faction']} are shifting.",
+        f"Probe the route toward {region_connections(location)[0]} and test the wider front.",
+    ]
+
+    cinematic_tags = [profile["threat"].lower().replace(" ", "-"), mood, "living-world"]
+    if profile["danger"] >= 4:
+        cinematic_tags.append("hazard-surge")
+    if "memory" in combined:
+        cinematic_tags.append("memory-echo")
+
+    return normalize_dynamic_scene(
+        {
+            "turn_title": f"Turn {turn_count}: {profile['relic']} Stirs",
+            "visual_mood": mood,
+            "weather": weather_options.get(profile["biome"], "restless atmospheric drift"),
+            "ambient_cue": f"{profile['threat']} pressure the region while {profile['faction']} struggle to hold the line.",
+            "objective_focus": active_stage.get("title") if active_stage else f"Stabilize {location} before the campaign fractures.",
+            "hazard": recent_consequence,
+            "world_shift": f"{profile['relic']} is altering {location}; every choice leaves a visible mark on the route ahead.",
+            "tension": tension,
+            "threat_level": profile["danger"],
+            "route_options": route_options,
+            "cinematic_tags": cinematic_tags,
+        },
+        location,
+    )
+
+
 def generate_deterministic_world_payload(current_state: dict, character: dict, theme: str, selected_region: str | None = None) -> dict:
     region = selected_region if selected_region in VALID_LOCATIONS else current_state.get("location", character.get("startLocation", "The Nexus Point"))
     story_memory = normalize_story_memory(current_state.get("story_memory"))
@@ -692,10 +846,12 @@ def generate_deterministic_world_payload(current_state: dict, character: dict, t
     story_memory["summary"] = generate_memory_summary(story_memory, region)
     world_map = generate_deterministic_map(theme, character, {**current_state, "location": region})
     quest_chain = generate_deterministic_quest_chain(region, character, current_state)
+    seeded_state = {**current_state, "story_memory": story_memory, "quest_chain": quest_chain}
     return {
         "generated_map": world_map,
         "quest_chain": quest_chain,
         "story_memory": story_memory,
+        "dynamic_scene": derive_scene_director(seeded_state, character, region),
     }
 
 
@@ -735,6 +891,7 @@ def sanitize_world_payload(payload: dict, baseline: dict) -> dict:
     merged_chain["stages"] = stages[:3]
 
     story_memory = normalize_story_memory({**baseline["story_memory"], **payload.get("story_memory", {})})
+    dynamic_scene = normalize_dynamic_scene(payload.get("dynamic_scene"), merged_chain["region"])
 
     return {
         "generated_map": {
@@ -746,6 +903,7 @@ def sanitize_world_payload(payload: dict, baseline: dict) -> dict:
         },
         "quest_chain": merged_chain,
         "story_memory": story_memory,
+        "dynamic_scene": dynamic_scene,
     }
 
 
@@ -868,6 +1026,8 @@ def merge_world_state(current_state: dict, new_state: dict, player_action: str, 
             current_state.get("location", "The Nexus Point"),
             merged["location"],
         )
+
+    merged["dynamic_scene"] = derive_scene_director(merged, character, merged["location"], player_action, narrative)
 
     return merged
 

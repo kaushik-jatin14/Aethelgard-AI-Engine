@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Crosshair, Wind } from 'lucide-react';
+import { MapPin, Crosshair, Wind, AlertTriangle, Orbit } from 'lucide-react';
 import { locations } from '../data/locations';
 import LocationEffects from './LocationEffects';
 import VideoBackground from './VideoBackground';
@@ -17,9 +17,20 @@ const VIDEO_MAP = {
   terrifying: 't-e2g8B3_EE'
 };
 
-const EnvironmentViewer = ({ location, isProcessing }) => {
+const moodTint = {
+  watchful: 'rgba(120, 86, 34, 0.22)',
+  tense: 'rgba(128, 44, 26, 0.24)',
+  volatile: 'rgba(118, 24, 24, 0.3)',
+  cataclysmic: 'rgba(88, 12, 36, 0.38)',
+  resolute: 'rgba(116, 98, 36, 0.2)',
+};
+
+const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
   const locData = useMemo(() => locations.find(l => l.name === location) || locations[0], [location]);
   const imgUrl = locData?.landscapeUrl || locData?.imageThumb;
+  const tension = dynamicScene?.tension || 35;
+  const threatLevel = dynamicScene?.threat_level || 2;
+  const overlayTint = moodTint[dynamicScene?.visual_mood] || 'rgba(0,0,0,0.12)';
 
   return (
     <div className="w-full max-w-5xl relative flex items-center justify-center overflow-hidden"
@@ -47,9 +58,15 @@ const EnvironmentViewer = ({ location, isProcessing }) => {
         style={{ background: 'linear-gradient(to top, rgba(8,6,3,0.85) 0%, transparent 50%, rgba(8,6,3,0.55) 100%)' }}/>
       <div className="absolute inset-0 z-10 pointer-events-none"
         style={{ background: 'linear-gradient(to right, rgba(8,6,3,0.3) 0%, transparent 40%, transparent 60%, rgba(8,6,3,0.3) 100%)' }}/>
+      <motion.div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{ background: `radial-gradient(circle at 50% 50%, transparent 15%, ${overlayTint} 100%)` }}
+        animate={{ opacity: [0.45, 0.78, 0.45] }}
+        transition={{ duration: Math.max(2.2, 7 - (tension / 20)), repeat: Infinity, ease: 'easeInOut' }}
+      />
 
       {/* Dynamic Location Effects */}
-      <LocationEffects atmosphere={locData.atmosphere} locationName={location} isProcessing={isProcessing} />
+      <LocationEffects atmosphere={locData.atmosphere} locationName={location} isProcessing={isProcessing} dynamicScene={dynamicScene} />
 
       {/* HUD */}
       <div className="relative z-30 w-full h-full p-5 flex flex-col justify-between">
@@ -62,11 +79,19 @@ const EnvironmentViewer = ({ location, isProcessing }) => {
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: isProcessing ? 'var(--ember)' : 'var(--iron-red)', animation: 'pulse 2s infinite' }}/>
               {isProcessing ? 'Oracle speaks...' : 'Neural Feed Active'}
             </div>
+            {dynamicScene?.weather && (
+              <div className="mt-1 text-[0.58rem]" style={{ color: 'var(--gold)' }}>
+                WEATHER: {dynamicScene.weather}
+              </div>
+            )}
           </div>
           <div className="px-3 py-2 text-xs text-right"
             style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)', fontFamily: 'Cinzel, serif', color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
             <div>LAT {locData.x}.{Math.floor(Math.random()*900+100)} N</div>
             <div>LNG {locData.y}.{Math.floor(Math.random()*900+100)} W</div>
+            {dynamicScene?.turn_title && (
+              <div className="mt-1 text-[0.58rem]" style={{ color: 'var(--gold)' }}>{dynamicScene.turn_title}</div>
+            )}
           </div>
         </div>
 
@@ -102,6 +127,11 @@ const EnvironmentViewer = ({ location, isProcessing }) => {
             <span className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
               {locData.atmosphere} zone
             </span>
+            {dynamicScene?.objective_focus && (
+              <p className="text-[0.65rem] uppercase mt-2 tracking-[0.18em]" style={{ color: 'var(--gold)', fontFamily: 'Cinzel, serif' }}>
+                {dynamicScene.objective_focus}
+              </p>
+            )}
           </div>
         </div>
 
@@ -111,16 +141,37 @@ const EnvironmentViewer = ({ location, isProcessing }) => {
             style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)' }}>
             <div className="w-20 h-1 overflow-hidden rounded-full" style={{ background: 'rgba(30,20,10,0.8)' }}>
               <motion.div className="h-full" style={{ background: 'var(--iron-red)' }}
-                animate={{ width: ['20%','80%','35%','70%','20%'] }} transition={{ duration: 10, repeat: Infinity }}/>
+                animate={{ width: [`${Math.max(12, tension - 20)}%`, `${Math.min(100, tension)}%`, `${Math.max(18, tension - 8)}%`] }} transition={{ duration: 6, repeat: Infinity }}/>
             </div>
             <span className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif', fontSize: '0.6rem', letterSpacing: '0.1em' }}>SIGNAL</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 text-xs"
+          <div className="flex items-center gap-3 px-3 py-2 text-xs"
             style={{ background: 'rgba(8,6,3,0.75)', border: '1px solid var(--border-stone)', backdropFilter: 'blur(8px)', color: 'var(--text-dim)', fontFamily: 'Cinzel, serif', letterSpacing: '0.05em' }}>
-            <Wind size={11}/> {locData.threats?.[0] || 'Area Clear'}
+            <div className="flex items-center gap-2">
+              <Wind size={11}/> {dynamicScene?.ambient_cue || locData.threats?.[0] || 'Area Clear'}
+            </div>
+            <div className="flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+              <AlertTriangle size={11} />
+              <span>THREAT {threatLevel}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {dynamicScene?.hazard && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 px-5 py-3 rounded-md"
+          style={{ background: 'rgba(10, 6, 4, 0.78)', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--text-parchment)', backdropFilter: 'blur(8px)' }}
+        >
+          <p className="text-[0.6rem] uppercase tracking-[0.18em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
+            <Orbit size={11} />
+            World Hazard Feed
+          </p>
+          <p className="text-sm" style={{ fontFamily: 'Crimson Text, serif' }}>{dynamicScene.hazard}</p>
+        </motion.div>
+      )}
 
       {/* Corner frame ornaments */}
       {['top-0 left-0 border-t border-l','top-0 right-0 border-t border-r','bottom-0 left-0 border-b border-l','bottom-0 right-0 border-b border-r'].map((cls,i)=>(
