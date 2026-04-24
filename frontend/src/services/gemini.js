@@ -31,7 +31,10 @@ const getBackendCandidates = () => {
     ? ['http://127.0.0.1:8000/api', 'http://localhost:8000/api']
     : [];
 
-  return [...new Set([envUrl, hostedFallback, sameOriginApi, ...localFallbacks].filter(Boolean))];
+  const hostedCandidates = [sameOriginApi, envUrl, hostedFallback];
+  const candidates = isLocalBrowser() ? [envUrl, sameOriginApi, ...localFallbacks] : hostedCandidates;
+
+  return [...new Set(candidates.filter(Boolean))];
 };
 
 const parseErrorResponse = async (response) => {

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://aethelgard-oracle.onrender.com/api/$1"
+    }
+  ]
+}
