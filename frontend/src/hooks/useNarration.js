@@ -10,14 +10,82 @@ const stripMarkdown = (text = '') =>
     .replace(/\s+/g, ' ')
     .trim();
 
+export const chunkNarrationText = (text = '', maxChars = 150) => {
+  const cleaned = stripMarkdown(text);
+  if (!cleaned) return [];
+
+  const sentenceParts = cleaned
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!sentenceParts.length) {
+    return [cleaned];
+  }
+
+  const chunks = [];
+  let current = '';
+
+  sentenceParts.forEach((sentence) => {
+    const next = current ? `${current} ${sentence}` : sentence;
+    if (next.length <= maxChars && current.split(/[.!?]/).filter(Boolean).length < 2) {
+      current = next;
+      return;
+    }
+
+    if (current) {
+      chunks.push(current);
+    }
+
+    if (sentence.length <= maxChars) {
+      current = sentence;
+      return;
+    }
+
+    const words = sentence.split(/\s+/);
+    let working = '';
+    words.forEach((word) => {
+      const candidate = working ? `${working} ${word}` : word;
+      if (candidate.length > maxChars && working) {
+        chunks.push(working);
+        working = word;
+      } else {
+        working = candidate;
+      }
+    });
+    current = working;
+  });
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks;
+};
+
 const pickVoice = (voices, profile) => {
   if (!voices.length) return null;
   const keywords = (profile?.keywords || []).map((item) => item.toLowerCase());
-  for (const keyword of keywords) {
-    const match = voices.find((voice) => voice.name.toLowerCase().includes(keyword));
-    if (match) return match;
-  }
-  return voices.find((voice) => /en/i.test(voice.lang)) || voices[0] || null;
+  const scoreVoice = (voice) => {
+    const name = voice.name.toLowerCase();
+    let score = /en/i.test(voice.lang) ? 10 : 0;
+
+    keywords.forEach((keyword) => {
+      if (name.includes(keyword)) score += 40;
+    });
+
+    ['natural', 'neural', 'online', 'enhanced'].forEach((token) => {
+      if (name.includes(token)) score += 12;
+    });
+
+    ['google', 'default', 'basic'].forEach((token) => {
+      if (name.includes(token)) score -= 8;
+    });
+
+    return score;
+  };
+
+  return [...voices].sort((left, right) => scoreVoice(right) - scoreVoice(left))[0] || null;
 };
 
 export const useNarration = ({ enabled, character, voiceVolume = 1 }) => {

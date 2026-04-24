@@ -15,9 +15,14 @@ const isLocalBrowser = () => {
 };
 
 const normalizeBaseUrl = (url) => url?.replace(/\/+$/, '') || '';
+const ensureApiBase = (url) => {
+  const normalized = normalizeBaseUrl(url);
+  if (!normalized) return '';
+  return normalized.endsWith('/api') ? normalized : `${normalized}/api`;
+};
 
 const getBackendCandidates = () => {
-  const envUrl = normalizeBaseUrl(import.meta.env.VITE_BACKEND_URL);
+  const envUrl = ensureApiBase(import.meta.env.VITE_BACKEND_URL);
   const sameOriginApi = '/api';
   const localFallbacks = isLocalBrowser()
     ? ['http://127.0.0.1:8000/api', 'http://localhost:8000/api']

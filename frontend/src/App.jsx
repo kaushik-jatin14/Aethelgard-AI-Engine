@@ -10,9 +10,10 @@ import SettingsPanel, { SettingsButton } from './components/SettingsPanel';
 import HelpModal from './components/HelpModal';
 import AudioManager from './components/AudioManager';
 import QuestPanel from './components/QuestPanel';
+import NarrationOverlay from './components/NarrationOverlay';
 import { generateGameAction, generateWorldBuilderState } from './services/gemini';
 import { locations } from './data/locations';
-import useNarration from './hooks/useNarration';
+import useNarration, { chunkNarrationText } from './hooks/useNarration';
 import { useUISounds } from './hooks/useUISounds';
 
 const PREFERENCES_KEY = 'AETHELGARD_PREFERENCES';
@@ -57,6 +58,23 @@ const INITIAL_GAME_STATE = {
   difficulty: 'wardens-trial',
 };
 
+const buildDialogueEntry = ({
+  speaker,
+  label,
+  text,
+  portrait = null,
+  portraitFilter = null,
+  accent = 'var(--gold)',
+}) => ({
+  id: `${speaker}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+  speaker,
+  label,
+  portrait,
+  portraitFilter,
+  accent,
+  pages: chunkNarrationText(text),
+});
+
 const buildServiceNotice = (error, channel = 'oracle') => {
   const title = channel === 'gatekeeper' ? 'The Gate Keeper is unavailable.' : 'The Oracle is unavailable.';
   const detail = error?.message || 'The hosted AI service could not complete this request.';
@@ -99,6 +117,10 @@ function App() {
   const [tomeOpen, setTomeOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [serviceBanner, setServiceBanner] = useState(null);
+  const [dialogueLog, setDialogueLog] = useState([]);
+  const [dialogueCursor, setDialogueCursor] = useState(0);
+  const [dialoguePageIndex, setDialoguePageIndex] = useState(0);
+  const [dialogueVisible, setDialogueVisible] = useState(true);
   const { withSounds } = useUISounds();
   const { speak, stopNarration, selectedVoiceName } = useNarration({
     enabled: narrationEnabled,
@@ -110,6 +132,20 @@ function App() {
     ...baseCharacter,
     currentDifficulty: difficulty,
   });
+
+  const pushDialogueEntry = (entry) => {
+    if (!entry?.pages?.length) return;
+    setDialogueLog((prev) => {
+      const next = [...prev.slice(-10), entry];
+      setDialogueCursor(next.length - 1);
+      setDialoguePageIndex(0);
+      setDialogueVisible(true);
+      return next;
+    });
+  };
+
+  const activeDialogue = dialogueLog[dialogueCursor] || null;
+  const activeDialoguePage = activeDialogue?.pages?.[dialoguePageIndex] || '';
 
   useEffect(() => {
     document.documentElement.style.filter = `brightness(${brightness})`;
@@ -263,6 +299,13 @@ function App() {
       }
       setChatHistory([{ role: 'gm', text: res.narrative }]);
       setGameState(nextState);
+      pushDialogueEntry(buildDialogueEntry({
+        speaker: character?.name || char.name,
+        label: 'Opening Chronicle',
+        text: res.narrative,
+        portrait: char.image,
+        portraitFilter: char.fantasyFilter,
+      }));
     } catch (error) {
       const notice = buildServiceNotice(error, 'oracle');
       setServiceBanner({
@@ -270,6 +313,14 @@ function App() {
         text: notice,
       });
       setChatHistory([{ role: 'gm', text: notice }]);
+      pushDialogueEntry(buildDialogueEntry({
+        speaker: 'The Oracle',
+        label: 'Hosted Service Warning',
+        text: notice,
+        portrait: char.image,
+        portraitFilter: char.fantasyFilter,
+        accent: 'var(--iron-red)',
+      }));
     } finally {
       setIsProcessing(false);
     }
@@ -294,6 +345,13 @@ function App() {
 
       setChatHistory([...updatedHistory, { role: 'gm', text: res.narrative }]);
       setGameState(nextState);
+      pushDialogueEntry(buildDialogueEntry({
+        speaker: character?.name || 'The Oracle',
+        label: 'Oracle Chronicle',
+        text: res.narrative,
+        portrait: character?.image,
+        portraitFilter: character?.fantasyFilter,
+      }));
 
       const needsForge = !nextState.quest_chain || nextState.location !== previousLocation || nextState.quest_chain?.region !== nextState.location;
       if (needsForge) {
@@ -307,6 +365,14 @@ function App() {
         text: notice,
       });
       setChatHistory([...updatedHistory, { role: 'gm', text: notice }]);
+      pushDialogueEntry(buildDialogueEntry({
+        speaker: 'The Oracle',
+        label: 'Hosted Service Warning',
+        text: notice,
+        portrait: character?.image,
+        portraitFilter: character?.fantasyFilter,
+        accent: 'var(--iron-red)',
+      }));
     } finally {
       setIsProcessing(false);
     }
@@ -325,7 +391,13 @@ function App() {
       intel?.quest_hook || '',
       chain ? `${chain.title}. ${chain.arc}` : 'The region awaits a forged quest chain.',
     ].filter(Boolean).join(' ');
-    speak(summary, { force: true });
+    pushDialogueEntry(buildDialogueEntry({
+      speaker: region?.name || 'World Forge',
+      label: 'Region Chronicle',
+      text: summary,
+      portrait: region?.imageThumb,
+      accent: 'var(--gold-bright)',
+    }));
   };
 
   const handleReset = () => {
@@ -338,26 +410,52 @@ function App() {
     setServiceBanner(null);
     setIsForgingWorld(false);
     setForgeLoadingRegion(null);
+    setDialogueLog([]);
+    setDialogueCursor(0);
+    setDialoguePageIndex(0);
     stopNarration();
   };
 
   useEffect(() => {
-    if (!chatHistory.length) return;
-    const latest = chatHistory[chatHistory.length - 1];
-    if (latest.role === 'gm') {
-      speak(latest.text);
-    }
-  }, [chatHistory, speak]);
-
-  useEffect(() => {
-    if (serviceBanner?.text) {
-      speak(serviceBanner.text, { force: true });
-    }
-  }, [serviceBanner, speak]);
+    if (!dialogueVisible || !activeDialoguePage) return;
+    speak(activeDialoguePage, { force: true });
+  }, [dialogueVisible, activeDialoguePage, speak]);
 
   useEffect(() => {
     setGameState((prev) => ({ ...prev, difficulty }));
   }, [difficulty]);
+
+  const handleDialoguePrevious = () => {
+    if (!dialogueLog.length) return;
+    if (dialoguePageIndex > 0) {
+      setDialoguePageIndex((prev) => prev - 1);
+      return;
+    }
+    if (dialogueCursor > 0) {
+      const previousEntry = dialogueLog[dialogueCursor - 1];
+      setDialogueCursor((prev) => prev - 1);
+      setDialoguePageIndex(Math.max(0, (previousEntry?.pages?.length || 1) - 1));
+    }
+  };
+
+  const handleDialogueNext = () => {
+    if (!dialogueLog.length) return;
+    const currentPages = dialogueLog[dialogueCursor]?.pages || [];
+    if (dialoguePageIndex < currentPages.length - 1) {
+      setDialoguePageIndex((prev) => prev + 1);
+      return;
+    }
+    if (dialogueCursor < dialogueLog.length - 1) {
+      setDialogueCursor((prev) => prev + 1);
+      setDialoguePageIndex(0);
+    }
+  };
+
+  const handleDialogueReplay = () => {
+    if (activeDialoguePage) {
+      speak(activeDialoguePage, { force: true });
+    }
+  };
 
   const locData = locations.find((location) => location.name === gameState.location) || locations[0];
   let atmosphere = 'terrifying';
@@ -447,34 +545,35 @@ function App() {
     }
 
     return (
-      <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'var(--bg-dark)' }}>
-        <div className={`relative z-50 flex items-center justify-between px-6 py-4 transition-all duration-700 ${cinematicMode ? '-translate-y-full absolute top-0 w-full opacity-0' : 'translate-y-0 opacity-100 bg-[var(--bg-dark)] border-b border-[var(--border-stone)] shadow-xl'}`}>
-          <div className="flex items-center gap-4">
+      <div className="flex h-screen flex-col overflow-hidden" style={{ background: 'var(--bg-dark)' }}>
+        <div className={`relative z-50 transition-all duration-700 ${cinematicMode ? '-translate-y-full absolute top-0 w-full opacity-0' : 'translate-y-0 opacity-100 bg-[var(--bg-dark)] border-b border-[var(--border-stone)] shadow-xl'}`}>
+          <div className="grid grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-6">
+          <div className="flex items-center gap-4 min-w-0">
             <div className="w-14 h-14 rounded-full overflow-hidden" style={{ border: '2px solid var(--gold)' }}>
               <img src={character?.image} alt={character?.name} className="w-full h-full object-cover object-top" style={{ filter: character?.gender === 'female' ? character?.fantasyFilter : '' }} />
             </div>
-            <div>
-              <h2 className="text-3xl font-black uppercase tracking-widest drop-shadow-md" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel Decorative, serif' }}>
+            <div className="min-w-0">
+              <h2 className="truncate text-2xl font-black uppercase tracking-[0.18em] drop-shadow-md lg:text-3xl" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel Decorative, serif' }}>
                 {character?.name}
               </h2>
-              <p className="text-sm italic drop-shadow-sm font-bold" style={{ color: 'var(--gold)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.15em' }}>
+              <p className="truncate text-sm font-bold italic drop-shadow-sm" style={{ color: 'var(--gold)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.15em' }}>
                 {character?.title}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col items-center absolute left-1/2 -translate-x-1/2">
-            <p className="text-[0.65rem] font-ancient uppercase tracking-[0.3em] mb-1" style={{ color: 'var(--text-dim)' }}>Current Territory</p>
-            <div className="flex items-center gap-4">
-              <div className="divider-ancient w-16" />
-              <h1 className="text-4xl font-black uppercase tracking-widest drop-shadow-lg" style={{ color: 'var(--gold)', fontFamily: 'Cinzel, serif' }}>
+          <div className="flex min-w-0 flex-col items-start justify-center lg:items-center">
+            <p className="mb-1 text-[0.65rem] font-ancient uppercase tracking-[0.3em]" style={{ color: 'var(--text-dim)' }}>Current Territory</p>
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="divider-ancient hidden w-12 lg:block" />
+              <h1 className="break-words text-2xl font-black uppercase tracking-[0.18em] drop-shadow-lg lg:text-4xl" style={{ color: 'var(--gold)', fontFamily: 'Cinzel, serif' }}>
                 {gameState.location}
               </h1>
-              <div className="divider-ancient w-16" />
+              <div className="divider-ancient hidden w-12 lg:block" />
             </div>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="text-[0.6rem] font-ancient tracking-[0.1em]" style={{ color: 'var(--text-dim)' }}>VITALITY</span>
-              <div className="w-32 health-bar-track rounded-sm overflow-hidden" style={{ height: '6px' }}>
+              <div className="w-28 overflow-hidden rounded-sm health-bar-track sm:w-32" style={{ height: '6px' }}>
                 <motion.div className={`h-full health-bar-fill ${(gameState.health || 100) > 50 ? 'healthy' : ''}`} animate={{ width: `${gameState.health || 100}%` }} transition={{ duration: 0.8 }} />
               </div>
               <span className="text-[0.6rem] font-ancient font-bold" style={{ color: (gameState.health || 100) > 50 ? 'var(--forest-light)' : 'var(--iron-red)' }}>
@@ -482,22 +581,23 @@ function App() {
               </span>
             </div>
             {gameState.world_map?.theme && (
-              <p className="text-[0.55rem] mt-2 uppercase tracking-[0.18em] font-ancient text-center max-w-[540px]" style={{ color: 'var(--text-dim)' }}>
+              <p className="mt-2 max-w-[42rem] break-words text-left text-[0.6rem] uppercase tracking-[0.16em] lg:text-center" style={{ color: 'var(--text-dim)' }}>
                 {gameState.world_map.theme}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="badge-ancient">{DIFFICULTY_LABELS[difficulty]}</span>
               <span className="badge-ancient">{realmTheme === 'ashen-night' ? 'Ashen Night' : 'Sunlit Chronicle'}</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col items-start gap-3 lg:items-end">
             <TopBtn icon={<RefreshCw size={13} />} label="Abandon Quest" onClick={handleReset} danger />
+          </div>
           </div>
         </div>
 
-        <div className="absolute top-28 left-6 z-[60] flex flex-col gap-3">
+        <div className="absolute left-4 top-24 z-[60] flex flex-col gap-3 sm:left-6 sm:top-28">
           <button
             {...withSounds({ onClick: () => setCinematicMode(!cinematicMode) })}
             className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 hover:rotate-12 backdrop-blur-md"
@@ -515,7 +615,7 @@ function App() {
           </button>
         </div>
 
-        <div className="absolute top-4 right-4 z-[60] flex gap-3">
+        <div className="absolute right-4 top-4 z-[60] flex gap-3">
           <button
             {...withSounds({ onClick: () => setIsMapOpen(true) })}
             className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
@@ -533,7 +633,7 @@ function App() {
           </button>
         </div>
 
-        <div className="relative flex flex-1 overflow-hidden items-center justify-start bg-black">
+        <div className="relative flex flex-1 items-center justify-start overflow-hidden bg-black">
           <motion.div
             animate={{
               width: cinematicMode && !chatOpen ? '100%' : cinematicMode && chatOpen ? '70%' : !cinematicMode && !chatOpen ? '90%' : '65%',
@@ -552,20 +652,20 @@ function App() {
                   initial={{ opacity: 0, x: -18 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -18 }}
-                  className="absolute top-6 left-6 max-w-md px-5 py-4 rounded-md shadow-2xl border"
+                  className="absolute left-4 top-20 right-4 z-20 max-w-[min(92vw,32rem)] rounded-md border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
                   style={{ background: 'rgba(15, 11, 6, 0.86)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}
                 >
                   <p className="text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
                     <Sparkles size={12} />
                     Live Scene Director
                   </p>
-                  <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
+                  <p className="text-sm font-bold uppercase break-words" style={{ color: 'var(--text-parchment)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
                     {dynamicScene.world_shift}
                   </p>
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
                     <div className="flex-1">
                       <p className="text-[0.55rem] uppercase tracking-[0.14em] mb-1" style={{ color: 'var(--text-dim)' }}>
                         Tension
@@ -595,7 +695,7 @@ function App() {
                   initial={{ opacity: 0, y: -14 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -14 }}
-                  className="absolute top-6 right-6 max-w-md px-5 py-4 rounded-md shadow-2xl border"
+                  className="absolute left-4 right-4 top-[15.5rem] z-20 max-w-[min(92vw,32rem)] rounded-md border px-4 py-4 shadow-2xl sm:left-auto sm:right-6 sm:top-6 sm:px-5"
                   style={{
                     background: serviceBanner.tone === 'critical' ? 'rgba(96, 22, 22, 0.92)' : 'rgba(82, 55, 11, 0.92)',
                     borderColor: serviceBanner.tone === 'critical' ? 'var(--blood)' : 'var(--gold-dim)',
@@ -675,7 +775,7 @@ function App() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 18 }}
-                  className="absolute left-6 right-6 bottom-24 z-20 grid grid-cols-1 md:grid-cols-3 gap-3"
+                  className="absolute bottom-24 left-4 right-4 z-20 grid grid-cols-1 gap-3 md:grid-cols-3 sm:left-6 sm:right-6"
                 >
                   {dynamicScene.route_options.map((route) => (
                     <button
@@ -695,6 +795,17 @@ function App() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <NarrationOverlay
+              dialogueLog={dialogueLog}
+              dialogueCursor={dialogueCursor}
+              dialoguePageIndex={dialoguePageIndex}
+              onPrevious={handleDialoguePrevious}
+              onNext={handleDialogueNext}
+              onReplay={handleDialogueReplay}
+              onClose={() => setDialogueVisible(false)}
+              narrationEnabled={narrationEnabled}
+            />
           </motion.div>
         </div>
 

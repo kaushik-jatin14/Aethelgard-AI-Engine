@@ -87,7 +87,7 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
           <motion.div
             initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed top-0 right-0 bottom-0 w-[30%] flex flex-col z-[90]"
+            className="fixed top-0 right-0 bottom-0 z-[90] flex w-full max-w-[28rem] flex-col lg:max-w-[36vw]"
             style={{ background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-stone)', boxShadow: '-20px 0 60px rgba(0,0,0,0.8)' }}
           >
             {/* Parchment texture */}
@@ -169,7 +169,7 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
               </div>
             )}
 
-            <div className="relative flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar"
+            <div className="relative flex-1 overflow-y-auto p-4 sm:p-5 space-y-6 custom-scrollbar"
               style={{ background: 'var(--bg-dark)' }}>
               {dynamicScene && (
                 <div className="p-3 border rounded-md" style={{ background: 'rgba(20,14,8,0.35)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}>
@@ -232,7 +232,7 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
                     )}
                   </div>
 
-                  <div className={`p-4 text-sm leading-relaxed border-l-2 ${msg.role === 'player' ? 'border-r-2 border-l-0' : ''}`}
+                  <div className={`max-w-full overflow-hidden break-words rounded-r-xl p-4 text-sm leading-relaxed border-l-2 ${msg.role === 'player' ? 'rounded-l-xl rounded-r-none border-r-2 border-l-0' : ''}`}
                     style={msg.role === 'gm'
                       ? { background: 'rgba(201,168,76,0.05)', borderColor: 'var(--gold-dim)', color: 'var(--text-parchment)' }
                       : { background: 'var(--bg-card)', borderColor: 'var(--border-stone)', color: 'var(--text-faded)' }
@@ -274,7 +274,7 @@ const ChatPanel = ({ isOpen, onToggle, history, onSend, isProcessing, characterN
                   </p>
                   {actionChoices.map((choice, i) => (
                     <button key={i} onClick={() => handleQuickAction(choice)}
-                      className="w-full text-left px-4 py-2.5 text-sm rounded transition-all hover:scale-[1.01] font-lore"
+                      className="w-full text-left px-4 py-2.5 text-sm rounded transition-all hover:scale-[1.01] font-lore break-words"
                       style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-gold)', color: 'var(--text-parchment)', boxShadow: '0 0 8px rgba(201,168,76,0.05)' }}>
                       <span style={{ color: 'var(--gold)' }}>{i + 1}. </span>{choice}
                     </button>
