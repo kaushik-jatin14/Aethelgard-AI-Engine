@@ -121,6 +121,7 @@ function App() {
   const [dialogueCursor, setDialogueCursor] = useState(0);
   const [dialoguePageIndex, setDialoguePageIndex] = useState(0);
   const [dialogueVisible, setDialogueVisible] = useState(true);
+  const [activeChatNarrationId, setActiveChatNarrationId] = useState(null);
   const { withSounds } = useUISounds();
   const { speak, stopNarration, selectedVoiceName } = useNarration({
     enabled: narrationEnabled,
@@ -395,9 +396,27 @@ function App() {
       speaker: region?.name || 'World Forge',
       label: 'Region Chronicle',
       text: summary,
-      portrait: region?.imageThumb,
       accent: 'var(--gold-bright)',
     }));
+  };
+
+  const handleReadChatMessage = (text, messageId) => {
+    setActiveChatNarrationId(messageId);
+    speak(text, { force: true });
+  };
+
+  const handleStopChatNarration = () => {
+    setActiveChatNarrationId(null);
+    stopNarration();
+  };
+
+  const handleStageBlankClick = (event) => {
+    const interactiveTarget = event.target.closest('button, input, textarea, a, [data-keep-dialogue]');
+    if (interactiveTarget) return;
+
+    setDialogueVisible(false);
+    setActiveChatNarrationId(null);
+    stopNarration();
   };
 
   const handleReset = () => {
@@ -604,7 +623,7 @@ function App() {
           </div>
         </div>
 
-        <div className="absolute left-4 top-24 z-[60] flex flex-col gap-3 sm:left-6 sm:top-28">
+        <div className="absolute right-4 top-24 z-[60] flex flex-col gap-3 sm:right-6 sm:top-24">
           <button
             {...withSounds({ onClick: () => setCinematicMode(!cinematicMode) })}
             className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 hover:rotate-12 backdrop-blur-md"
@@ -620,9 +639,6 @@ function App() {
             <BookOpen size={24} />
             {((gameState.quests || []).length > 0 || gameState.quest_chain) && <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-black animate-pulse" />}
           </button>
-        </div>
-
-        <div className="absolute right-4 top-4 z-[60] flex gap-3">
           <button
             {...withSounds({ onClick: () => setIsMapOpen(true) })}
             className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
@@ -643,13 +659,14 @@ function App() {
         <div className="relative flex flex-1 items-center justify-start overflow-hidden bg-black">
           <motion.div
             animate={{
-              width: cinematicMode && !chatOpen ? '100%' : cinematicMode && chatOpen ? '70%' : !cinematicMode && !chatOpen ? '90%' : '65%',
-              height: cinematicMode ? '100%' : '80%',
+              width: cinematicMode && !chatOpen ? '100%' : cinematicMode && chatOpen ? '70%' : !cinematicMode && !chatOpen ? '94%' : '72%',
+              height: cinematicMode ? '100%' : '88%',
               borderRadius: cinematicMode ? '0px' : '24px',
               marginLeft: cinematicMode ? '0px' : '5%',
             }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)] bg-[var(--bg-deepest)]"
+            onClick={handleStageBlankClick}
           >
             <EnvironmentViewer location={gameState.location} isProcessing={isProcessing} dynamicScene={dynamicScene} />
 
@@ -659,17 +676,18 @@ function App() {
                   initial={{ opacity: 0, x: -18 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -18 }}
-                  className="absolute left-4 top-20 right-4 z-20 max-w-[min(92vw,32rem)] rounded-md border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
+                  className="absolute left-4 top-20 right-4 z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
                   style={{ background: 'var(--stage-surface-strong)', borderColor: 'var(--border-gold)', color: 'var(--stage-text-primary)' }}
+                  data-keep-dialogue
                 >
                   <p className="stage-text-secondary text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2">
                     <Sparkles size={12} />
-                    Live Scene Director
+                    Live Scene
                   </p>
                   <p className="text-sm font-bold uppercase break-words" style={{ color: 'var(--stage-text-primary)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--stage-text-secondary)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-2 text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--stage-text-secondary)', fontFamily: 'Crimson Text, serif' }}>
                     {dynamicScene.world_shift}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -702,13 +720,14 @@ function App() {
                   initial={{ opacity: 0, y: -14 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -14 }}
-                  className="absolute left-4 right-4 top-[15.5rem] z-20 max-w-[min(92vw,32rem)] rounded-md border px-4 py-4 shadow-2xl sm:left-auto sm:right-6 sm:top-6 sm:px-5"
+                  className="absolute left-4 right-4 top-[17rem] z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:right-auto sm:top-[14rem] sm:px-5"
                   style={{
                     background: serviceBanner.tone === 'critical' ? 'rgba(96, 22, 22, 0.92)' : 'rgba(82, 55, 11, 0.92)',
                     borderColor: serviceBanner.tone === 'critical' ? 'var(--blood)' : 'var(--gold-dim)',
                     color: '#fff1da',
                     fontFamily: 'Crimson Text, serif',
                   }}
+                  data-keep-dialogue
                 >
                   <p className="text-[0.65rem] uppercase tracking-[0.22em] mb-1" style={{ color: 'var(--gold)' }}>
                     Hosted Service Status
@@ -726,8 +745,9 @@ function App() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 14 }}
-                  className="absolute bottom-6 left-6 max-w-sm px-4 py-3 rounded-md shadow-2xl border"
+                  className="absolute bottom-6 right-6 max-w-sm px-4 py-3 rounded-2xl shadow-2xl border"
                   style={{ background: 'rgba(20, 14, 8, 0.92)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}
+                  data-keep-dialogue
                 >
                   <p className="text-[0.62rem] uppercase tracking-[0.2em] mb-1 flex items-center gap-2" style={{ color: 'var(--gold)' }}>
                     <Sparkles size={12} />
@@ -735,28 +755,6 @@ function App() {
                   </p>
                   <p className="text-sm leading-relaxed" style={{ fontFamily: 'Crimson Text, serif' }}>
                     Forging map logic, regional quest chains, and memory threads for {forgeLoadingRegion || gameState.location}.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              {currentRegionIntel && (
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 18 }}
-                  className="absolute bottom-6 right-6 max-w-md px-5 py-4 rounded-md shadow-2xl border"
-                  style={{ background: 'rgba(15, 11, 6, 0.84)', borderColor: 'var(--border-stone)', color: 'var(--text-parchment)' }}
-                >
-                  <p className="text-[0.62rem] uppercase tracking-[0.18em] mb-1" style={{ color: 'var(--gold)' }}>
-                    AI Region Focus
-                  </p>
-                  <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
-                    {currentRegionIntel.region_title}
-                  </p>
-                  <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
-                    {currentRegionIntel.quest_hook}
                   </p>
                 </motion.div>
               )}
@@ -776,33 +774,6 @@ function App() {
               )}
             </AnimatePresence>
 
-            <AnimatePresence>
-              {dynamicScene?.route_options?.length > 0 && !isProcessing && (
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 18 }}
-                  className="absolute bottom-24 left-4 right-4 z-20 grid grid-cols-1 gap-3 md:grid-cols-3 sm:left-6 sm:right-6"
-                >
-                  {dynamicScene.route_options.map((route) => (
-                    <button
-                      key={route}
-                      {...withSounds({ onClick: () => handlePlayerAction(route) })}
-                      className="text-left px-4 py-3 rounded-md shadow-2xl transition-all hover:-translate-y-1"
-                      style={{ background: 'rgba(12, 8, 5, 0.82)', border: '1px solid var(--border-stone)', color: 'var(--text-parchment)' }}
-                    >
-                      <p className="text-[0.58rem] uppercase tracking-[0.16em] mb-1" style={{ color: 'var(--gold)' }}>
-                        Dynamic Route
-                      </p>
-                      <p className="text-sm leading-relaxed" style={{ fontFamily: 'Crimson Text, serif' }}>
-                        {route}
-                      </p>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <NarrationOverlay
               dialogueLog={dialogueLog}
               dialogueCursor={dialogueCursor}
@@ -812,6 +783,7 @@ function App() {
               onReplay={handleDialogueReplay}
               onClose={() => setDialogueVisible(false)}
               narrationEnabled={narrationEnabled}
+              visible={dialogueVisible}
             />
           </motion.div>
         </div>
@@ -1021,6 +993,11 @@ function App() {
           characterFilter={character?.fantasyFilter}
           serviceBanner={serviceBanner}
           dynamicScene={dynamicScene}
+          onReadMessage={handleReadChatMessage}
+          onStopReading={handleStopChatNarration}
+          activeNarrationId={activeChatNarrationId}
+          narrationEnabled={narrationEnabled}
+          onClearNarration={handleStopChatNarration}
         />
 
         <SettingsPanel
