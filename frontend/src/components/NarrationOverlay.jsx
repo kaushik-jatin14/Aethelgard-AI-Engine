@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,17 +36,17 @@ const NarrationOverlay = ({
           className="relative overflow-hidden rounded-[1.8rem] border px-4 py-4 pl-[6.4rem]"
           style={{
             background: 'linear-gradient(180deg, rgba(22,16,11,0.96) 0%, rgba(14,10,7,0.98) 100%)',
-            borderColor: 'rgba(201,168,76,0.34)',
+            borderColor: 'rgba(113,220,245,0.34)',
             boxShadow: '0 22px 60px rgba(0,0,0,0.5)',
             backdropFilter: 'blur(18px)',
           }}
         >
-          <div className="absolute left-4 top-4 bottom-4 w-[4.3rem] overflow-hidden rounded-[1.2rem] border" style={{ borderColor: 'var(--border-gold)', background: 'rgba(8,6,3,0.85)' }}>
+              <div className="absolute left-4 top-4 bottom-4 w-[4.3rem] overflow-hidden rounded-[1.2rem] border" style={{ borderColor: 'var(--border-gold)', background: 'rgba(7,15,24,0.86)' }}>
             {activeEntry.portrait ? (
               <img src={activeEntry.portrait} alt={activeEntry.speaker} className="h-full w-full object-cover object-top" style={{ filter: activeEntry.portraitFilter || 'none' }} />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-2xl" style={{ color: 'var(--gold)' }}>
-                ⚔
+                  ✦
               </div>
             )}
           </div>
@@ -54,7 +54,7 @@ const NarrationOverlay = ({
           <button
             onClick={onClose}
             className="absolute right-4 top-4 rounded-full px-3 py-1 text-[0.58rem] uppercase tracking-[0.2em] transition-opacity hover:opacity-80"
-            style={{ color: 'var(--text-dim)', background: 'rgba(8,6,3,0.55)', border: '1px solid var(--border-stone)' }}
+                    style={{ color: 'var(--text-dim)', background: 'rgba(8,17,28,0.6)', border: '1px solid var(--border-stone)' }}
           >
             Hide
           </button>
@@ -63,17 +63,17 @@ const NarrationOverlay = ({
             <p className="text-[0.58rem] uppercase tracking-[0.24em]" style={{ color: activeEntry.accent || 'var(--gold)' }}>
               {activeEntry.label}
             </p>
-            <h3 className="mt-1 text-lg font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel, serif' }}>
+            <h3 className="mt-1 text-lg font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-ui)' }}>
               {activeEntry.speaker}
             </h3>
           </div>
 
-          <div className="mt-3 rounded-[1.1rem] border px-4 py-3" style={{ background: 'rgba(236,220,182,0.06)', borderColor: 'rgba(201,168,76,0.2)' }}>
+          <div className="mt-3 rounded-[1.1rem] border px-4 py-3" style={{ background: 'rgba(236,220,182,0.06)', borderColor: 'rgba(113,220,245,0.2)' }}>
             <p
               className="text-lg leading-8"
               style={{
                 color: 'var(--text-parchment)',
-                fontFamily: 'Crimson Text, serif',
+                fontFamily: 'var(--font-body)',
                 textShadow: '0 1px 12px rgba(0,0,0,0.45)',
               }}
             >
@@ -114,3 +114,4 @@ const NarrationOverlay = ({
 };
 
 export default NarrationOverlay;
+

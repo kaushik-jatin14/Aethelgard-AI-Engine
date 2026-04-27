@@ -1,27 +1,27 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Crosshair, MapPin, Orbit, Wind } from 'lucide-react';
 import { locations } from '../data/locations';
 import LocationEffects from './LocationEffects';
 
 const atmosphereBackdrop = {
-  mystical: 'radial-gradient(circle at 50% 28%, rgba(70, 121, 197, 0.34), transparent 32%), radial-gradient(circle at 68% 62%, rgba(92, 49, 128, 0.28), transparent 34%), linear-gradient(180deg, rgba(8,6,20,0.88) 0%, rgba(6,8,22,0.78) 55%, rgba(7,5,12,0.96) 100%)',
-  scary: 'radial-gradient(circle at 50% 28%, rgba(147, 25, 25, 0.28), transparent 32%), radial-gradient(circle at 76% 58%, rgba(213, 95, 33, 0.18), transparent 28%), linear-gradient(180deg, rgba(17,6,6,0.9) 0%, rgba(24,8,8,0.78) 55%, rgba(10,5,6,0.96) 100%)',
-  dark: 'radial-gradient(circle at 50% 22%, rgba(83, 73, 115, 0.2), transparent 24%), linear-gradient(180deg, rgba(10,10,16,0.92) 0%, rgba(11,12,20,0.82) 55%, rgba(7,6,10,0.98) 100%)',
-  desolate: 'radial-gradient(circle at 50% 22%, rgba(120, 101, 64, 0.16), transparent 26%), linear-gradient(180deg, rgba(24,18,12,0.92) 0%, rgba(33,24,15,0.84) 55%, rgba(13,9,6,0.98) 100%)',
-  adventurous: 'radial-gradient(circle at 50% 25%, rgba(214, 110, 28, 0.2), transparent 30%), radial-gradient(circle at 70% 58%, rgba(247, 183, 56, 0.16), transparent 26%), linear-gradient(180deg, rgba(18,11,7,0.88) 0%, rgba(32,18,9,0.76) 58%, rgba(10,7,5,0.98) 100%)',
-  soothing: 'radial-gradient(circle at 46% 24%, rgba(88, 148, 120, 0.24), transparent 30%), linear-gradient(180deg, rgba(8,18,12,0.9) 0%, rgba(10,22,14,0.78) 55%, rgba(7,10,8,0.98) 100%)',
-  tense: 'radial-gradient(circle at 50% 26%, rgba(190, 77, 35, 0.22), transparent 30%), linear-gradient(180deg, rgba(20,10,7,0.92) 0%, rgba(26,14,8,0.8) 55%, rgba(9,7,5,0.98) 100%)',
-  intimidating: 'radial-gradient(circle at 50% 18%, rgba(98, 71, 164, 0.2), transparent 24%), linear-gradient(180deg, rgba(12,9,18,0.94) 0%, rgba(18,10,22,0.82) 55%, rgba(7,5,10,0.98) 100%)',
-  terrifying: 'radial-gradient(circle at 50% 18%, rgba(132, 13, 44, 0.26), transparent 24%), radial-gradient(circle at 78% 62%, rgba(58, 9, 42, 0.22), transparent 26%), linear-gradient(180deg, rgba(18,6,12,0.96) 0%, rgba(17,7,14,0.84) 55%, rgba(7,4,8,0.99) 100%)',
+  mystical: 'radial-gradient(circle at 50% 28%, rgba(85, 165, 255, 0.28), transparent 32%), radial-gradient(circle at 68% 62%, rgba(134, 98, 231, 0.2), transparent 34%), linear-gradient(180deg, rgba(7,12,27,0.9) 0%, rgba(6,14,26,0.82) 55%, rgba(5,9,18,0.98) 100%)',
+  scary: 'radial-gradient(circle at 50% 28%, rgba(196, 84, 118, 0.22), transparent 32%), radial-gradient(circle at 76% 58%, rgba(114, 160, 255, 0.14), transparent 28%), linear-gradient(180deg, rgba(14,8,18,0.92) 0%, rgba(18,10,24,0.82) 55%, rgba(8,6,12,0.98) 100%)',
+  dark: 'radial-gradient(circle at 50% 22%, rgba(94, 110, 152, 0.18), transparent 24%), linear-gradient(180deg, rgba(8,12,20,0.94) 0%, rgba(9,14,22,0.86) 55%, rgba(5,8,14,0.99) 100%)',
+  desolate: 'radial-gradient(circle at 50% 22%, rgba(120, 155, 190, 0.14), transparent 26%), linear-gradient(180deg, rgba(14,18,24,0.94) 0%, rgba(15,20,28,0.86) 55%, rgba(8,10,15,0.99) 100%)',
+  adventurous: 'radial-gradient(circle at 50% 25%, rgba(79, 182, 220, 0.18), transparent 30%), radial-gradient(circle at 70% 58%, rgba(160, 212, 255, 0.14), transparent 26%), linear-gradient(180deg, rgba(8,18,28,0.9) 0%, rgba(10,22,33,0.8) 58%, rgba(5,11,19,0.99) 100%)',
+  soothing: 'radial-gradient(circle at 46% 24%, rgba(88, 196, 174, 0.24), transparent 30%), linear-gradient(180deg, rgba(7,18,18,0.92) 0%, rgba(9,22,24,0.82) 55%, rgba(5,10,12,0.99) 100%)',
+  tense: 'radial-gradient(circle at 50% 26%, rgba(99, 157, 255, 0.2), transparent 30%), linear-gradient(180deg, rgba(9,14,23,0.94) 0%, rgba(10,18,28,0.84) 55%, rgba(5,8,13,0.99) 100%)',
+  intimidating: 'radial-gradient(circle at 50% 18%, rgba(115, 96, 226, 0.22), transparent 24%), linear-gradient(180deg, rgba(9,10,24,0.96) 0%, rgba(12,12,28,0.86) 55%, rgba(5,6,14,0.99) 100%)',
+  terrifying: 'radial-gradient(circle at 50% 18%, rgba(173, 65, 116, 0.24), transparent 24%), radial-gradient(circle at 78% 62%, rgba(76, 110, 204, 0.2), transparent 26%), linear-gradient(180deg, rgba(12,8,22,0.97) 0%, rgba(13,9,24,0.88) 55%, rgba(5,5,14,1) 100%)',
 };
 
 const moodTint = {
-  watchful: 'rgba(92, 64, 27, 0.22)',
-  tense: 'rgba(126, 50, 27, 0.26)',
-  volatile: 'rgba(134, 32, 32, 0.28)',
-  cataclysmic: 'rgba(89, 18, 45, 0.36)',
-  resolute: 'rgba(72, 93, 63, 0.24)',
+  watchful: 'rgba(56, 122, 196, 0.18)',
+  tense: 'rgba(116, 88, 210, 0.18)',
+  volatile: 'rgba(184, 71, 118, 0.22)',
+  cataclysmic: 'rgba(116, 67, 184, 0.28)',
+  resolute: 'rgba(58, 140, 132, 0.18)',
 };
 
 const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
@@ -37,13 +37,18 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
         background: atmosphereBackdrop[locData.atmosphere] || atmosphereBackdrop.mystical,
       }}
     >
-      <motion.img
-        src="/assets/map_bg.png"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-16"
-        style={{ mixBlendMode: 'screen' }}
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+      <motion.div
+        className="absolute inset-[-12%]"
+        style={{
+          background: `
+            radial-gradient(circle at 20% 24%, rgba(86, 133, 184, 0.18), transparent 24%),
+            radial-gradient(circle at 78% 22%, rgba(211, 122, 66, 0.16), transparent 24%),
+            radial-gradient(circle at 52% 76%, rgba(109, 47, 61, 0.16), transparent 28%)
+          `,
+          filter: 'blur(30px)',
+        }}
+        animate={{ scale: [1, 1.08, 1], rotate: [0, 1.2, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       <motion.div
@@ -57,13 +62,13 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(180deg, rgba(7,5,3,0.84) 0%, rgba(7,5,3,0.18) 18%, rgba(7,5,3,0.12) 62%, rgba(7,5,3,0.86) 100%)',
+            'linear-gradient(180deg, rgba(4,9,16,0.82) 0%, rgba(4,9,16,0.18) 18%, rgba(4,9,16,0.12) 62%, rgba(4,9,16,0.84) 100%)',
         }}
       />
 
       <LocationEffects atmosphere={locData.atmosphere} locationName={location} isProcessing={isProcessing} dynamicScene={dynamicScene} />
 
-      <div className="relative z-20 flex h-full w-full flex-col justify-between px-4 pb-5 pt-20 sm:px-6 sm:pb-6 sm:pt-6">
+      <div className="relative z-20 flex h-full w-full flex-col justify-between px-4 py-5 sm:px-6 sm:py-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div
             className="stage-panel-strong max-w-[18rem] rounded-2xl px-4 py-3"
@@ -73,7 +78,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
               <Wind size={11} />
               Realm Pulse
             </p>
-            <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--stage-text-primary)', fontFamily: 'Crimson Text, serif' }}>
+            <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--stage-text-primary)', fontFamily: 'var(--font-body)' }}>
               {dynamicScene?.weather || 'The air stirs with forgotten magic.'}
             </p>
             {dynamicScene?.objective_focus && (
@@ -91,21 +96,21 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
               <MapPin size={11} />
               Drift Coordinates
             </p>
-            <p className="mt-1 text-sm" style={{ fontFamily: 'Cinzel, serif', color: 'var(--stage-text-primary)' }}>
+            <p className="mt-1 text-sm" style={{ fontFamily: 'var(--font-ui)', color: 'var(--stage-text-primary)' }}>
               LAT {locData.x}.{Math.floor(Math.random() * 900 + 100)} N
             </p>
-            <p className="text-sm" style={{ fontFamily: 'Cinzel, serif', color: 'var(--stage-text-primary)' }}>
+            <p className="text-sm" style={{ fontFamily: 'var(--font-ui)', color: 'var(--stage-text-primary)' }}>
               LNG {locData.y}.{Math.floor(Math.random() * 900 + 100)} W
             </p>
           </div>
         </div>
 
-        <div className="pointer-events-none flex flex-1 items-center justify-center px-4">
+        <div className="pointer-events-none flex flex-1 items-center justify-center px-4 py-3">
           <div
             className="max-w-[min(88vw,40rem)] rounded-[2rem] px-6 py-5 text-center"
             style={{
-              background: 'linear-gradient(180deg, rgba(14,10,7,0.76) 0%, rgba(11,8,6,0.9) 100%)',
-              border: '1px solid rgba(201,168,76,0.22)',
+              background: 'linear-gradient(180deg, rgba(9,18,29,0.72) 0%, rgba(7,14,24,0.9) 100%)',
+              border: '1px solid rgba(113,220,245,0.22)',
               boxShadow: '0 18px 60px rgba(0,0,0,0.45)',
               backdropFilter: 'blur(18px)',
             }}
@@ -123,14 +128,14 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
                 className="mt-3 text-4xl font-black uppercase sm:text-6xl"
                 style={{
                   color: 'var(--stage-text-primary)',
-                  fontFamily: 'Cinzel Decorative, serif',
+                  fontFamily: 'var(--font-display)',
                   textShadow: '0 2px 24px rgba(0,0,0,0.7)',
                 }}
               >
                 {location}
               </motion.h2>
             </AnimatePresence>
-            <p className="stage-text-muted mt-2 text-sm italic" style={{ fontFamily: 'Crimson Text, serif' }}>
+            <p className="stage-text-muted mt-2 text-sm italic" style={{ fontFamily: 'var(--font-body)' }}>
               {locData.atmosphere} frontier
             </p>
           </div>
@@ -145,7 +150,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
               <Orbit size={11} />
               Hazard Feed
             </p>
-            <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--stage-text-primary)', fontFamily: 'Crimson Text, serif' }}>
+            <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--stage-text-primary)', fontFamily: 'var(--font-body)' }}>
               {dynamicScene?.hazard || locData.currentEvent}
             </p>
           </div>
@@ -159,7 +164,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
                 <p className="stage-text-muted text-[0.56rem] uppercase tracking-[0.14em] mb-1">
                   Tension
                 </p>
-                <div className="h-2 overflow-hidden rounded-full" style={{ background: 'rgba(24,18,12,0.9)' }}>
+                <div className="h-2 overflow-hidden rounded-full" style={{ background: 'rgba(9,16,24,0.92)' }}>
                   <motion.div
                     className="h-full"
                     animate={{ width: `${tension}%` }}
@@ -167,8 +172,8 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
                     style={{
                       background:
                         tension >= 70
-                          ? 'linear-gradient(90deg, #7a1010, #d24724)'
-                          : 'linear-gradient(90deg, #876229, #d1a049)',
+                          ? 'linear-gradient(90deg, #8d4d9b, #ff7396)'
+                          : 'linear-gradient(90deg, #4d9bc2, #8ce5ff)',
                     }}
                   />
                 </div>
@@ -178,7 +183,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
                   <AlertTriangle size={11} />
                   Threat
                 </p>
-                <p className="mt-1 text-lg font-bold" style={{ color: 'var(--stage-text-primary)', fontFamily: 'Cinzel, serif' }}>
+                <p className="mt-1 text-lg font-bold" style={{ color: 'var(--stage-text-primary)', fontFamily: 'var(--font-ui)' }}>
                   {threatLevel}/5
                 </p>
               </div>
@@ -191,7 +196,7 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
         <div
           key={index}
           className={`absolute z-20 m-3 h-8 w-8 pointer-events-none ${cls}`}
-          style={{ borderColor: 'rgba(201,168,76,0.25)' }}
+          style={{ borderColor: 'rgba(113,220,245,0.25)' }}
         />
       ))}
     </div>
@@ -199,3 +204,4 @@ const EnvironmentViewer = ({ location, isProcessing, dynamicScene = null }) => {
 };
 
 export default EnvironmentViewer;
+

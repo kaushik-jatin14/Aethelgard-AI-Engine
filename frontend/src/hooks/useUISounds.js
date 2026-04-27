@@ -1,6 +1,15 @@
 import { useCallback, useRef } from 'react';
 
-// Highly optimized, zero-latency Web Audio API synthesizer for ancient cinematic UI sounds
+const createNoiseBuffer = (ctx, duration = 0.2) => {
+  const size = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i += 1) {
+    data[i] = (Math.random() * 2 - 1) * 0.55;
+  }
+  return buffer;
+};
+
 export const useUISounds = () => {
   const audioCtxRef = useRef(null);
 
@@ -17,33 +26,41 @@ export const useUISounds = () => {
     initAudio();
     const ctx = audioCtxRef.current;
     if (!ctx) return;
-    
-    // Soft, soothing parchment rustle / wind breath
-    const bufferSize = ctx.sampleRate * 0.2; // 200ms
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1; // White noise
-    }
-    
-    const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = buffer;
-    
+
+    const start = ctx.currentTime;
+    const bufferSource = ctx.createBufferSource();
+    bufferSource.buffer = createNoiseBuffer(ctx, 0.16);
+
     const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(400, ctx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
-    
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1450, start);
+    filter.Q.setValueAtTime(1.4, start);
+
+    const shimmer = ctx.createOscillator();
+    const shimmerGain = ctx.createGain();
+    shimmer.type = 'triangle';
+    shimmer.frequency.setValueAtTime(740, start);
+    shimmer.frequency.exponentialRampToValueAtTime(910, start + 0.12);
+
     const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-    
-    noiseSource.connect(filter);
+    gainNode.gain.setValueAtTime(0.0001, start);
+    gainNode.gain.exponentialRampToValueAtTime(0.045, start + 0.03);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+
+    shimmerGain.gain.setValueAtTime(0.0001, start);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.015, start + 0.02);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.14);
+
+    bufferSource.connect(filter);
     filter.connect(gainNode);
+    shimmer.connect(shimmerGain);
+    shimmerGain.connect(gainNode);
     gainNode.connect(ctx.destination);
-    
-    noiseSource.start();
+
+    bufferSource.start(start);
+    bufferSource.stop(start + 0.16);
+    shimmer.start(start);
+    shimmer.stop(start + 0.14);
   }, []);
 
   const playClick = useCallback(() => {
@@ -51,49 +68,65 @@ export const useUISounds = () => {
     const ctx = audioCtxRef.current;
     if (!ctx) return;
 
-    // Deep, terrifying ancient stone thud (Game of Thrones style)
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.type = 'sine';
-    // Very low pitch drop
-    osc.frequency.setValueAtTime(100, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.3);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    
-    // Add a slight distortion for rock/stone texture
-    const waveShaper = ctx.createWaveShaper();
-    const curve = new Float32Array(400);
-    for (let i = 0; i < 400; ++i) {
-      const x = (i * 2) / 400 - 1;
-      curve[i] = (3 + 20) * x * 20 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x));
-    }
-    waveShaper.curve = curve;
+    const start = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, start);
+    master.gain.exponentialRampToValueAtTime(0.14, start + 0.015);
+    master.gain.exponentialRampToValueAtTime(0.0001, start + 0.32);
+    master.connect(ctx.destination);
 
-    osc.connect(waveShaper);
-    waveShaper.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
+    const impact = ctx.createOscillator();
+    impact.type = 'triangle';
+    impact.frequency.setValueAtTime(182, start);
+    impact.frequency.exponentialRampToValueAtTime(84, start + 0.28);
+
+    const overtone = ctx.createOscillator();
+    overtone.type = 'sine';
+    overtone.frequency.setValueAtTime(510, start);
+    overtone.frequency.exponentialRampToValueAtTime(240, start + 0.18);
+
+    const overtoneGain = ctx.createGain();
+    overtoneGain.gain.setValueAtTime(0.0001, start);
+    overtoneGain.gain.exponentialRampToValueAtTime(0.08, start + 0.01);
+    overtoneGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.14);
+
+    const impulse = ctx.createBufferSource();
+    impulse.buffer = createNoiseBuffer(ctx, 0.09);
+    const impulseFilter = ctx.createBiquadFilter();
+    impulseFilter.type = 'lowpass';
+    impulseFilter.frequency.setValueAtTime(560, start);
+
+    const impulseGain = ctx.createGain();
+    impulseGain.gain.setValueAtTime(0.0001, start);
+    impulseGain.gain.exponentialRampToValueAtTime(0.11, start + 0.01);
+    impulseGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.09);
+
+    impact.connect(master);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(master);
+    impulse.connect(impulseFilter);
+    impulseFilter.connect(impulseGain);
+    impulseGain.connect(master);
+
+    impact.start(start);
+    impact.stop(start + 0.32);
+    overtone.start(start);
+    overtone.stop(start + 0.18);
+    impulse.start(start);
+    impulse.stop(start + 0.09);
   }, []);
 
-  const withSounds = useCallback((props = {}) => {
-    return {
-      ...props,
-      onMouseEnter: (e) => {
-        playHover();
-        if (props.onMouseEnter) props.onMouseEnter(e);
-      },
-      onClick: (e) => {
-        playClick();
-        if (props.onClick) props.onClick(e);
-      }
-    };
-  }, [playClick, playHover]);
+  const withSounds = useCallback((props = {}) => ({
+    ...props,
+    onMouseEnter: (event) => {
+      playHover();
+      if (props.onMouseEnter) props.onMouseEnter(event);
+    },
+    onClick: (event) => {
+      playClick();
+      if (props.onClick) props.onClick(event);
+    },
+  }), [playClick, playHover]);
 
   return { playClick, playHover, withSounds };
 };

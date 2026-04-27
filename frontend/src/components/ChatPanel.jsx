@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Send, Loader2, X, ChevronDown, Volume2, VolumeX, ScrollText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -27,13 +27,13 @@ const SectionToggle = ({ title, description, open, onToggle, count = null }) => 
   <button
     onClick={onToggle}
     className="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all hover:opacity-90"
-    style={{ background: 'rgba(20,14,8,0.7)', border: '1px solid var(--border-stone)' }}
+    style={{ background: 'rgba(10,20,31,0.76)', border: '1px solid var(--border-stone)' }}
   >
     <div>
       <p className="text-[0.62rem] uppercase tracking-[0.18em]" style={{ color: 'var(--gold)' }}>
         {title}{count !== null ? ` · ${count}` : ''}
       </p>
-      <p className="mt-1 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+      <p className="mt-1 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
         {description}
       </p>
     </div>
@@ -68,7 +68,7 @@ const ChatPanel = ({
   const [input, setInput] = useState('');
   const [toolboxOpen, setToolboxOpen] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(false);
-  const [actionsOpen, setActionsOpen] = useState(true);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState({});
   const messagesEndRef = useRef(null);
 
@@ -118,7 +118,7 @@ const ChatPanel = ({
             >
               <div
                 className="px-3 py-1.5 rounded-2xl text-[0.62rem] font-ancient uppercase"
-                style={{ background: 'rgba(12,8,5,0.9)', border: '1px solid var(--border-gold)', color: 'var(--gold)', letterSpacing: '0.12em' }}
+                style={{ background: 'rgba(8,18,28,0.92)', border: '1px solid var(--border-gold)', color: 'var(--gold)', letterSpacing: '0.12em' }}
               >
                 Commune with the Oracle
               </div>
@@ -142,7 +142,7 @@ const ChatPanel = ({
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl" style={{ background: 'var(--bg-card)' }}>
-                    ⚔
+                    ✦
                   </div>
                 )}
 
@@ -172,7 +172,7 @@ const ChatPanel = ({
 
             <div
               className="relative flex items-center justify-between px-5 py-4 border-b"
-              style={{ borderColor: 'var(--border-stone)', background: 'rgba(10,8,5,0.96)' }}
+              style={{ borderColor: 'var(--border-stone)', background: 'rgba(8,16,26,0.96)' }}
             >
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, transparent, var(--gold), transparent)' }} />
               <div className="flex min-w-0 items-center gap-3">
@@ -181,7 +181,7 @@ const ChatPanel = ({
                     <img src={characterImage} alt="" className="h-full w-full object-cover object-top" style={{ filter: characterFilter || 'none' }} />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center" style={{ background: 'var(--bg-card)', color: 'var(--gold)' }}>
-                      ⚔
+                      ✦
                     </div>
                   )}
                 </div>
@@ -191,7 +191,7 @@ const ChatPanel = ({
                   </h2>
                   <div className="mt-0.5 flex items-center gap-1.5">
                     <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: serviceBanner ? 'var(--iron-red)' : 'var(--forest-light)' }} />
-                    <span className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                    <span className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                       {serviceBanner ? 'Hosted service warning' : 'Ancient counsel available'}
                     </span>
                   </div>
@@ -199,6 +199,7 @@ const ChatPanel = ({
               </div>
               <button
                 onClick={() => onToggle(false)}
+                title="Close the Oracle panel"
                 className="rounded-xl p-2 transition-colors hover:opacity-80"
                 style={{ background: 'var(--bg-card)', border: '1px solid var(--border-stone)', color: 'var(--text-faded)' }}
               >
@@ -206,7 +207,7 @@ const ChatPanel = ({
               </button>
             </div>
 
-            <div className="relative border-b px-4 py-3 space-y-3" style={{ borderColor: 'var(--border-stone)', background: 'rgba(11,9,6,0.96)' }}>
+            <div className="relative border-b px-4 py-3 space-y-3" style={{ borderColor: 'var(--border-stone)', background: 'rgba(9,18,29,0.96)' }}>
               <SectionToggle
                 title="Oracle tools"
                 description="Hints, memory, difficulty, and guidance"
@@ -227,7 +228,7 @@ const ChatPanel = ({
                         onClick={() => handleQuickAction(guide.action)}
                         disabled={isProcessing}
                         className="rounded-xl px-3 py-2 text-left text-[0.68rem] uppercase transition-all hover:opacity-85 disabled:opacity-40"
-                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-gold)', color: 'var(--gold)', letterSpacing: '0.05em', fontFamily: 'Cinzel, serif' }}
+                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-gold)', color: 'var(--gold)', letterSpacing: '0.05em', fontFamily: 'var(--font-ui)' }}
                       >
                         {guide.label}
                       </button>
@@ -257,7 +258,7 @@ const ChatPanel = ({
                         onClick={() => handleQuickAction(route)}
                         disabled={isProcessing}
                         className="w-full rounded-xl px-4 py-3 text-left text-sm transition-all hover:opacity-85 disabled:opacity-40"
-                        style={{ background: 'rgba(20,14,8,0.72)', border: '1px solid var(--border-stone)', color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}
+                        style={{ background: 'rgba(11,22,34,0.78)', border: '1px solid var(--border-stone)', color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}
                       >
                         {route}
                       </button>
@@ -277,25 +278,25 @@ const ChatPanel = ({
               }}
             >
               {serviceBanner && (
-                <div className="rounded-2xl border px-4 py-3" style={{ background: 'rgba(90,18,18,0.24)', borderColor: 'var(--blood)', color: '#f2dada' }}>
+                <div className="rounded-2xl border px-4 py-3" style={{ background: 'rgba(90,32,52,0.22)', borderColor: 'var(--blood)', color: '#ffe6ee' }}>
                   <p className="text-[0.62rem] uppercase tracking-[0.16em]" style={{ color: 'var(--gold)' }}>
                     Hosted Service Warning
                   </p>
-                  <p className="mt-2 text-sm whitespace-pre-line" style={{ fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-2 text-sm whitespace-pre-line" style={{ fontFamily: 'var(--font-body)' }}>
                     {serviceBanner.text.replace(/\*\*/g, '')}
                   </p>
                 </div>
               )}
 
               {dynamicScene && (
-                <div className="rounded-2xl border px-4 py-3" style={{ background: 'rgba(18,12,8,0.65)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}>
+                <div className="rounded-2xl border px-4 py-3" style={{ background: 'rgba(10,21,33,0.76)', borderColor: 'var(--border-gold)', color: 'var(--text-parchment)' }}>
                   <p className="text-[0.62rem] uppercase tracking-[0.16em]" style={{ color: 'var(--gold)' }}>
                     Scene feed
                   </p>
-                  <p className="mt-1 text-sm font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+                  <p className="mt-1 text-sm font-semibold" style={{ fontFamily: 'var(--font-ui)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="mt-1 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-1 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                     {dynamicScene.ambient_cue}
                   </p>
                 </div>
@@ -304,7 +305,7 @@ const ChatPanel = ({
               {history.length === 0 && (
                 <div className="flex h-full items-center justify-center px-6 text-center">
                   <div>
-                    <div className="mb-3 text-4xl">⚔</div>
+                    <div className="mb-3 text-4xl">✦</div>
                     <p className="text-sm font-ancient" style={{ color: 'var(--text-dim)' }}>
                       The Oracle awaits thy first word, {characterName || 'Traveler'}...
                     </p>
@@ -331,9 +332,9 @@ const ChatPanel = ({
                         <>
                           <div
                             className="flex h-5 w-5 items-center justify-center rounded-sm text-xs font-ancient font-bold"
-                            style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid var(--border-gold)', color: 'var(--gold)' }}
+                            style={{ background: 'rgba(113,220,245,0.15)', border: '1px solid var(--border-gold)', color: 'var(--gold)' }}
                           >
-                            ⚔
+                            ✦
                           </div>
                           <span className="text-xs font-ancient" style={{ color: 'var(--gold)', letterSpacing: '0.1em' }}>
                             Oracle
@@ -358,9 +359,9 @@ const ChatPanel = ({
                     <div
                       className="w-full overflow-hidden rounded-3xl border px-4 py-4"
                       style={{
-                        background: message.role === 'gm' ? 'rgba(201,168,76,0.05)' : 'var(--bg-card)',
+                        background: message.role === 'gm' ? 'rgba(113,220,245,0.05)' : 'var(--bg-card)',
                         borderColor: isActiveNarration ? 'var(--gold)' : message.role === 'gm' ? 'var(--gold-dim)' : 'var(--border-stone)',
-                        boxShadow: isActiveNarration ? '0 0 22px rgba(201,168,76,0.18)' : 'none',
+                        boxShadow: isActiveNarration ? '0 0 22px rgba(113,220,245,0.18)' : 'none',
                         color: message.role === 'gm' ? 'var(--text-parchment)' : 'var(--text-faded)',
                       }}
                     >
@@ -386,7 +387,7 @@ const ChatPanel = ({
                           <button
                             onClick={() => (isActiveNarration ? onStopReading?.() : onReadMessage?.(message.text, messageId))}
                             className="btn-ancient rounded-full px-3 py-2"
-                            title="Read this oracle message aloud"
+                            title={isActiveNarration ? 'Stop reading this message' : 'Read this oracle message aloud'}
                           >
                             {isActiveNarration ? <VolumeX size={14} /> : <Volume2 size={14} />}
                           </button>
@@ -395,7 +396,7 @@ const ChatPanel = ({
                             <button
                               onClick={() => setExpandedMessages((prev) => ({ ...prev, [messageId]: !prev[messageId] }))}
                               className="rounded-full px-3 py-2 text-[0.62rem] uppercase tracking-[0.12em]"
-                              style={{ background: 'rgba(20,14,8,0.78)', border: '1px solid var(--border-stone)', color: 'var(--text-faded)', fontFamily: 'Cinzel, serif' }}
+                              style={{ background: 'rgba(10,20,31,0.82)', border: '1px solid var(--border-stone)', color: 'var(--text-faded)', fontFamily: 'var(--font-ui)' }}
                             >
                               {expanded ? 'Show less' : 'View full lore'}
                             </button>
@@ -409,9 +410,9 @@ const ChatPanel = ({
 
               {isProcessing && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-3 mr-4">
-                  <div className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm" style={{ background: 'rgba(201,168,76,0.05)', borderColor: 'var(--gold-dim)' }}>
+                  <div className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm" style={{ background: 'rgba(113,220,245,0.05)', borderColor: 'var(--gold-dim)' }}>
                     <Loader2 size={16} className="animate-spin" style={{ color: 'var(--gold)' }} />
-                    <span className="italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                    <span className="italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                       The Oracle consults the ancient scrolls...
                     </span>
                   </div>
@@ -421,7 +422,7 @@ const ChatPanel = ({
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="relative border-t px-4 py-3 space-y-3" style={{ borderColor: 'var(--border-stone)', background: 'rgba(10,8,5,0.96)' }}>
+            <div className="relative border-t px-4 py-3 space-y-3" style={{ borderColor: 'var(--border-stone)', background: 'rgba(8,16,26,0.96)' }}>
               <SectionToggle
                 title="Action choices"
                 description="Show only the current possible moves"
@@ -442,7 +443,7 @@ const ChatPanel = ({
                         key={index}
                         onClick={() => handleQuickAction(choice)}
                         className="w-full rounded-2xl px-4 py-3 text-left text-sm transition-all hover:opacity-85"
-                        style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-gold)', color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}
+                        style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-gold)', color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}
                       >
                         <span style={{ color: 'var(--gold)' }}>{index + 1}. </span>
                         {choice}
@@ -461,7 +462,7 @@ const ChatPanel = ({
                   placeholder="Speak thy will, Champion..."
                   className="input-ancient flex-1 rounded-2xl px-4 py-3 text-sm"
                 />
-                <button type="submit" disabled={isProcessing || !input.trim()} className="btn-ancient rounded-2xl px-4 py-3 disabled:opacity-40">
+                <button type="submit" title="Send thy command to the Oracle" disabled={isProcessing || !input.trim()} className="btn-ancient rounded-2xl px-4 py-3 disabled:opacity-40">
                   <Send size={16} />
                 </button>
               </form>
@@ -474,3 +475,4 @@ const ChatPanel = ({
 };
 
 export default ChatPanel;
+

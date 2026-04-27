@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, MapIcon, X, Swords, Backpack, ScrollText, Eye, EyeOff, BookOpen, Sparkles, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EnvironmentViewer from './components/EnvironmentViewer';
@@ -108,7 +108,7 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [volume, setVolume] = useState(0.6);
   const [muted, setMuted] = useState(false);
-  const [brightness, setBrightness] = useState(1.0);
+  const [brightness, setBrightness] = useState(1.08);
   const [realmTheme, setRealmTheme] = useState('ashen-night');
   const [difficulty, setDifficulty] = useState('wardens-trial');
   const [narrationEnabled, setNarrationEnabled] = useState(true);
@@ -579,10 +579,10 @@ function App() {
               <img src={character?.image} alt={character?.name} className="w-full h-full object-cover object-top" style={{ filter: character?.gender === 'female' ? character?.fantasyFilter : '' }} />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-black uppercase tracking-[0.18em] drop-shadow-md lg:text-3xl" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel Decorative, serif' }}>
+              <h2 className="truncate text-2xl font-black uppercase tracking-[0.18em] drop-shadow-md lg:text-3xl" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-display)' }}>
                 {character?.name}
               </h2>
-              <p className="truncate text-sm font-bold italic drop-shadow-sm" style={{ color: 'var(--gold)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.15em' }}>
+              <p className="truncate text-sm font-bold italic drop-shadow-sm" style={{ color: 'var(--gold)', fontFamily: 'var(--font-body)', letterSpacing: '0.15em' }}>
                 {character?.title}
               </p>
             </div>
@@ -592,7 +592,7 @@ function App() {
             <p className="mb-1 text-[0.65rem] font-ancient uppercase tracking-[0.3em]" style={{ color: 'var(--text-dim)' }}>Current Territory</p>
             <div className="flex min-w-0 items-center gap-3">
               <div className="divider-ancient hidden w-12 lg:block" />
-              <h1 className="break-words text-2xl font-black uppercase tracking-[0.18em] drop-shadow-lg lg:text-4xl" style={{ color: 'var(--gold)', fontFamily: 'Cinzel, serif' }}>
+              <h1 className="break-words text-2xl font-black uppercase tracking-[0.18em] drop-shadow-lg lg:text-4xl" style={{ color: 'var(--gold)', fontFamily: 'var(--font-ui)' }}>
                 {gameState.location}
               </h1>
               <div className="divider-ancient hidden w-12 lg:block" />
@@ -623,34 +623,45 @@ function App() {
           </div>
         </div>
 
-        <div className="absolute right-4 top-24 z-[60] flex flex-col gap-3 sm:right-6 sm:top-24">
+        <div
+          className="absolute right-4 top-1/2 z-[60] flex -translate-y-1/2 flex-col gap-2 rounded-[1.6rem] border p-2 shadow-2xl sm:right-6"
+          style={{ background: 'rgba(8,10,15,0.72)', borderColor: 'var(--border-stone)', backdropFilter: 'blur(14px)' }}
+        >
           <button
             {...withSounds({ onClick: () => setCinematicMode(!cinematicMode) })}
-            className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 hover:rotate-12 backdrop-blur-md"
-            style={{ background: 'rgba(8,6,3,0.7)', border: '2px solid var(--gold)', color: 'var(--gold)' }}
+            className="tooltip-shell p-3 rounded-full shadow-2xl transition-all hover:scale-110 hover:rotate-12 backdrop-blur-md"
+            data-tooltip={cinematicMode ? 'Hide interface accents' : 'Reveal interface accents'}
+            title={cinematicMode ? 'Hide interface accents' : 'Reveal interface accents'}
+              style={{ background: 'rgba(7,15,24,0.76)', border: '2px solid var(--gold)', color: 'var(--gold)' }}
           >
             {cinematicMode ? <Eye size={24} /> : <EyeOff size={24} />}
           </button>
           <button
             {...withSounds({ onClick: () => setTomeOpen(!tomeOpen) })}
-            className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
-            style={{ background: 'rgba(8,6,3,0.7)', border: '2px solid var(--border-bright)', color: 'var(--text-parchment)' }}
+            className="tooltip-shell p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
+            data-tooltip={tomeOpen ? 'Hide the Tome of Fates' : 'Open the Tome of Fates'}
+            title={tomeOpen ? 'Hide the Tome of Fates' : 'Open the Tome of Fates'}
+              style={{ background: 'rgba(7,15,24,0.76)', border: '2px solid var(--border-bright)', color: 'var(--text-parchment)' }}
           >
             <BookOpen size={24} />
             {((gameState.quests || []).length > 0 || gameState.quest_chain) && <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-black animate-pulse" />}
           </button>
           <button
             {...withSounds({ onClick: () => setIsMapOpen(true) })}
-            className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
-            style={{ background: 'rgba(8,6,3,0.7)', border: '1px solid var(--border-stone)', color: 'var(--gold)' }}
+            className="tooltip-shell p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md relative"
+            data-tooltip="Open the realm map"
+            title="Open the realm map"
+              style={{ background: 'rgba(7,15,24,0.76)', border: '1px solid var(--border-stone)', color: 'var(--gold)' }}
           >
             <MapIcon size={20} />
             {gameState.world_map && <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full" style={{ background: 'var(--gold-bright)', boxShadow: '0 0 12px var(--glow-gold)' }} />}
           </button>
           <button
             {...withSounds({ onClick: () => setShowSettings(true) })}
-            className="p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md"
-            style={{ background: 'rgba(8,6,3,0.7)', border: '1px solid var(--border-stone)', color: 'var(--text-dim)' }}
+            className="tooltip-shell p-3 rounded-full shadow-2xl transition-all hover:scale-110 backdrop-blur-md"
+            data-tooltip="Open settings"
+            title="Open settings"
+              style={{ background: 'rgba(7,15,24,0.76)', border: '1px solid var(--border-stone)', color: 'var(--text-dim)' }}
           >
             <Swords size={20} />
           </button>
@@ -659,10 +670,10 @@ function App() {
         <div className="relative flex flex-1 items-center justify-start overflow-hidden bg-black">
           <motion.div
             animate={{
-              width: cinematicMode && !chatOpen ? '100%' : cinematicMode && chatOpen ? '70%' : !cinematicMode && !chatOpen ? '94%' : '72%',
-              height: cinematicMode ? '100%' : '88%',
-              borderRadius: cinematicMode ? '0px' : '24px',
-              marginLeft: cinematicMode ? '0px' : '5%',
+              width: chatOpen ? '70%' : '100%',
+              height: '100%',
+              borderRadius: '0px',
+              marginLeft: '0px',
             }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)] bg-[var(--bg-deepest)]"
@@ -671,12 +682,12 @@ function App() {
             <EnvironmentViewer location={gameState.location} isProcessing={isProcessing} dynamicScene={dynamicScene} />
 
             <AnimatePresence>
-              {dynamicScene && (
+              {dynamicScene && cinematicMode && (
                 <motion.div
                   initial={{ opacity: 0, x: -18 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -18 }}
-                  className="absolute left-4 top-20 right-4 z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
+                  className="absolute left-4 top-5 right-20 z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:top-6 sm:right-auto sm:px-5"
                   style={{ background: 'var(--stage-surface-strong)', borderColor: 'var(--border-gold)', color: 'var(--stage-text-primary)' }}
                   data-keep-dialogue
                 >
@@ -687,7 +698,7 @@ function App() {
                   <p className="text-sm font-bold uppercase break-words" style={{ color: 'var(--stage-text-primary)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--stage-text-secondary)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="mt-2 text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--stage-text-secondary)', fontFamily: 'var(--font-body)' }}>
                     {dynamicScene.world_shift}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -720,12 +731,12 @@ function App() {
                   initial={{ opacity: 0, y: -14 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -14 }}
-                  className="absolute left-4 right-4 top-[17rem] z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:right-auto sm:top-[14rem] sm:px-5"
+                  className="absolute left-4 right-20 top-[11rem] z-20 max-w-[min(92vw,20rem)] rounded-2xl border px-4 py-4 shadow-2xl sm:left-6 sm:right-auto sm:top-[13rem] sm:px-5"
                   style={{
                     background: serviceBanner.tone === 'critical' ? 'rgba(96, 22, 22, 0.92)' : 'rgba(82, 55, 11, 0.92)',
                     borderColor: serviceBanner.tone === 'critical' ? 'var(--blood)' : 'var(--gold-dim)',
                     color: '#fff1da',
-                    fontFamily: 'Crimson Text, serif',
+                    fontFamily: 'var(--font-body)',
                   }}
                   data-keep-dialogue
                 >
@@ -753,7 +764,7 @@ function App() {
                     <Sparkles size={12} />
                     World-Forge Active
                   </p>
-                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'Crimson Text, serif' }}>
+                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
                     Forging map logic, regional quest chains, and memory threads for {forgeLoadingRegion || gameState.location}.
                   </p>
                 </motion.div>
@@ -767,7 +778,7 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className="absolute top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded text-sm font-lore italic shadow-2xl backdrop-blur-md"
-                  style={{ background: 'rgba(139,32,32,0.8)', border: '1px solid var(--blood)', color: '#ffd0d0', fontFamily: 'Crimson Text, serif' }}
+                  style={{ background: 'rgba(127,49,68,0.82)', border: '1px solid var(--blood)', color: '#ffe6ee', fontFamily: 'var(--font-body)' }}
                 >
                   {gameState.health_change_reason}
                 </motion.div>
@@ -798,7 +809,7 @@ function App() {
               className="absolute top-0 left-0 h-full w-[430px] z-[70] flex flex-col shadow-[20px_0_50px_rgba(0,0,0,0.8)]"
               style={{ background: 'var(--bg-panel)', borderRight: '2px solid var(--border-gold)' }}
             >
-              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-stone)', background: 'rgba(8,6,3,0.9)' }}>
+              <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-stone)', background: 'rgba(8,17,28,0.92)' }}>
                 <div className="flex items-center gap-3">
                   <BookOpen size={24} style={{ color: 'var(--gold)' }} />
                   <h2 className="text-xl font-black uppercase tracking-widest" style={{ color: 'var(--text-parchment)' }}>The Tome of Fates</h2>
@@ -814,7 +825,7 @@ function App() {
                     <Sparkles size={13} />
                     World-Forge Summary
                   </p>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
                     {gameState.world_map?.world_summary || 'The world forge has not yet woven a campaign map for this save.'}
                   </p>
                   {gameState.world_map?.generated_via && (
@@ -839,17 +850,17 @@ function App() {
                   <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
                     {dynamicScene.turn_title}
                   </p>
-                  <p className="text-sm mt-2" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="text-sm mt-2" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
                     {dynamicScene.ambient_cue}
                   </p>
                   <div className="grid grid-cols-1 gap-2 mt-3 text-xs">
                     <div>
                       <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Objective Focus</p>
-                      <p style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>{dynamicScene.objective_focus}</p>
+                      <p style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}>{dynamicScene.objective_focus}</p>
                     </div>
                     <div>
                       <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Hazard</p>
-                      <p style={{ color: '#e3b4b4', fontFamily: 'Crimson Text, serif' }}>{dynamicScene.hazard}</p>
+                      <p style={{ color: '#e3b4b4', fontFamily: 'var(--font-body)' }}>{dynamicScene.hazard}</p>
                     </div>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {(dynamicScene.cinematic_tags || []).map((tag) => (
@@ -866,7 +877,7 @@ function App() {
                     <BrainCircuit size={14} /> Story Memory
                   </p>
                   <div className="rounded-md p-4 ancient-panel">
-                    <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                    <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
                       {gameState.story_memory?.summary}
                     </p>
                     {recentFlags.length > 0 && (
@@ -880,7 +891,7 @@ function App() {
 
                   <div className="mt-4 space-y-3">
                     {chronicle.length === 0 ? (
-                      <p className="text-sm italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                      <p className="text-sm italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                         No consequences have yet been written into the chronicle.
                       </p>
                     ) : (
@@ -892,7 +903,7 @@ function App() {
                             </p>
                             <span className="badge-ancient">{(entry.tags || []).join(' · ')}</span>
                           </div>
-                          <p className="text-sm mt-2" style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>
+                          <p className="text-sm mt-2" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}>
                             {entry.consequence}
                           </p>
                         </div>
@@ -911,17 +922,17 @@ function App() {
                     <p className="text-sm font-bold uppercase" style={{ color: 'var(--text-parchment)' }}>
                       {currentRegionIntel.region_title}
                     </p>
-                    <p className="text-sm mt-2 italic" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                    <p className="text-sm mt-2 italic" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
                       {currentRegionIntel.current_state}
                     </p>
                     <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
                       <div>
                         <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Relic</p>
-                        <p style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>{currentRegionIntel.relic}</p>
+                        <p style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}>{currentRegionIntel.relic}</p>
                       </div>
                       <div>
                         <p className="font-ancient uppercase mb-1" style={{ color: 'var(--text-dim)' }}>Notable NPC</p>
-                        <p style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>{currentRegionIntel.notable_npc}</p>
+                        <p style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}>{currentRegionIntel.notable_npc}</p>
                       </div>
                     </div>
                   </div>
@@ -934,13 +945,13 @@ function App() {
                     <Backpack size={14} /> Satchel
                   </p>
                   {(gameState.inventory || []).length === 0 ? (
-                    <p className="text-sm italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>Thy satchel is empty...</p>
+                    <p className="text-sm italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>Thy satchel is empty...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       {(gameState.inventory || []).map((item, index) => (
                         <div key={index} className="text-sm p-2 flex items-center gap-2 rounded bg-black/40 border border-stone-800">
                           <span style={{ color: 'var(--gold)' }}>◆</span>
-                          <span style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>{item}</span>
+                          <span style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>{item}</span>
                         </div>
                       ))}
                     </div>
@@ -952,7 +963,7 @@ function App() {
                 <div>
                   <p className="text-xs font-ancient mb-3" style={{ color: 'var(--text-dim)', letterSpacing: '0.15em' }}>KNOWN THREATS</p>
                   {(locData?.threats || []).map((threat, index) => (
-                    <p key={index} className="text-sm mb-1.5 flex items-center gap-2" style={{ color: 'var(--iron-red)', fontFamily: 'Crimson Text, serif' }}>
+                    <p key={index} className="text-sm mb-1.5 flex items-center gap-2" style={{ color: 'var(--iron-red)', fontFamily: 'var(--font-body)' }}>
                       <Swords size={12} /> {threat}
                     </p>
                   ))}
@@ -1036,7 +1047,7 @@ function App() {
 
   return (
     <>
-      <AudioManager atmosphere={atmosphere} volume={volume} muted={muted} />
+      <AudioManager atmosphere={atmosphere} character={character} volume={volume} muted={muted} />
       {renderScreen()}
     </>
   );
@@ -1062,3 +1073,4 @@ const TopBtn = ({ icon, label, onClick, danger }) => {
 };
 
 export default App;
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { generateHelpResponse } from '../services/gemini';
@@ -73,7 +73,7 @@ const HelpModal = ({ isOpen, onClose, onLogin }) => {
             <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-stone)', background: 'var(--bg-dark)' }}>
               <div>
                 <h3 className="font-ancient font-bold text-sm" style={{ color: 'var(--gold)' }}>The Gate Keeper</h3>
-                <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>Hosted login and guidance service</p>
+                <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>Hosted login and guidance service</p>
               </div>
               <button onClick={onClose} style={{ color: 'var(--text-faded)' }}><X size={16} /></button>
             </div>
@@ -83,7 +83,7 @@ const HelpModal = ({ isOpen, onClose, onLogin }) => {
                 <AlertTriangle size={16} style={{ color: '#ffb0b0', marginTop: '2px' }} />
                 <div className="flex-1">
                   <p className="text-xs uppercase tracking-[0.16em]" style={{ color: '#ffcece' }}>Service Warning</p>
-                  <p className="text-sm mt-1 leading-relaxed" style={{ color: '#f7dfdf', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="text-sm mt-1 leading-relaxed" style={{ color: '#ffe6ee', fontFamily: 'var(--font-body)' }}>
                     {serviceError.message}
                   </p>
                   {serviceError.retryable && lastQuestion && (
@@ -100,23 +100,23 @@ const HelpModal = ({ isOpen, onClose, onLogin }) => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar" style={{ background: 'var(--bg-dark)' }}>
               {helpHistory.length === 0 && (
-                <p className="text-xs italic text-center py-4" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                <p className="text-xs italic text-center py-4" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                   Ask the Gate Keeper anything about entering or surviving the realm...
                 </p>
               )}
               {helpHistory.map((message, index) => (
                 <div key={index} className={`text-sm p-3 border-l-2 ${message.role === 'gk' ? 'font-lore italic' : ''}`}
                   style={{
-                    background: message.role === 'gk' ? 'rgba(201,168,76,0.05)' : 'var(--bg-card)',
+                    background: message.role === 'gk' ? 'rgba(113,220,245,0.05)' : 'var(--bg-card)',
                     borderColor: message.role === 'gk' ? 'var(--gold-dim)' : 'var(--border-stone)',
                     color: 'var(--text-parchment)',
-                    fontFamily: message.role === 'gk' ? 'Crimson Text, serif' : 'Cinzel, serif',
+                    fontFamily: message.role === 'gk' ? 'var(--font-body)' : 'var(--font-ui)',
                   }}>
                   {message.text}
                 </div>
               ))}
               {helpLoading && (
-                <div className="flex items-center gap-2 p-3 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                <div className="flex items-center gap-2 p-3 text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                   <Loader2 size={14} className="animate-spin" style={{ color: 'var(--gold)' }} /> The Gate Keeper ponders...
                 </div>
               )}
@@ -141,3 +141,4 @@ const HelpModal = ({ isOpen, onClose, onLogin }) => {
 };
 
 export default HelpModal;
+

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Target, CheckCircle2, LockKeyhole, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,7 +41,7 @@ const QuestPanel = ({ questChain }) => {
         <h3 className="text-base font-black uppercase tracking-wide" style={{ color: 'var(--text-parchment)' }}>
           {questChain?.title || 'No forged quest yet'}
         </h3>
-        <p className="text-sm italic mt-2 leading-relaxed" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+        <p className="text-sm italic mt-2 leading-relaxed" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
           {questChain?.arc || 'Choose a region on the map to forge a quest chain bound to that land.'}
         </p>
       </div>
@@ -73,7 +73,7 @@ const QuestPanel = ({ questChain }) => {
                     <Target size={14} className="mt-1 shrink-0" style={{ color: tone.border }} />
                     <div>
                       <p className="text-[0.62rem] uppercase tracking-[0.18em] font-ancient" style={{ color: 'var(--text-dim)' }}>
-                        Stage {idx + 1} · {stage.kind}
+                  Stage {idx + 1} · {stage.kind}
                       </p>
                       <h4 className="text-sm font-bold uppercase tracking-wide" style={{ color: 'var(--text-parchment)' }}>
                         {stage.title}
@@ -86,16 +86,16 @@ const QuestPanel = ({ questChain }) => {
                   </span>
                 </div>
 
-                <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+                <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
                   {stage.objective}
                 </p>
 
                 <div className="mt-3 grid grid-cols-1 gap-2">
-                  <div className="rounded-sm px-3 py-2" style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid var(--border-stone)' }}>
+                  <div className="rounded-sm px-3 py-2" style={{ background: 'rgba(113,220,245,0.06)', border: '1px solid var(--border-stone)' }}>
                     <p className="text-[0.58rem] uppercase tracking-[0.16em] font-ancient mb-1" style={{ color: 'var(--gold)' }}>
                       Hint
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>
+                    <p className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>
                       {stage.hint}
                     </p>
                   </div>
@@ -103,14 +103,14 @@ const QuestPanel = ({ questChain }) => {
                     <p className="text-[0.58rem] uppercase tracking-[0.16em] font-ancient mb-1" style={{ color: 'var(--iron-red)' }}>
                       Risk
                     </p>
-                    <p className="text-xs" style={{ color: '#cfa6a6', fontFamily: 'Crimson Text, serif' }}>
+                    <p className="text-xs" style={{ color: '#cfa6a6', fontFamily: 'var(--font-body)' }}>
                       {stage.risk}
                     </p>
                   </div>
                 </div>
 
                 {stage.resolution && (
-                  <p className="text-xs mt-3 italic" style={{ color: 'var(--forest-light)', fontFamily: 'Crimson Text, serif' }}>
+                  <p className="text-xs mt-3 italic" style={{ color: 'var(--forest-light)', fontFamily: 'var(--font-body)' }}>
                     {stage.resolution}
                   </p>
                 )}
@@ -125,7 +125,7 @@ const QuestPanel = ({ questChain }) => {
           <p className="text-[0.62rem] uppercase tracking-[0.18em] font-ancient mb-1" style={{ color: 'var(--gold)' }}>
             Reward of the Region
           </p>
-          <p className="text-sm" style={{ color: 'var(--text-faded)', fontFamily: 'Crimson Text, serif' }}>
+          <p className="text-sm" style={{ color: 'var(--text-faded)', fontFamily: 'var(--font-body)' }}>
             {questChain.reward}
           </p>
         </div>
@@ -135,3 +135,4 @@ const QuestPanel = ({ questChain }) => {
 };
 
 export default QuestPanel;
+

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Volume2, VolumeX, Sun, HelpCircle, Server, Settings, MoonStar, ShieldAlert, Mic2 } from 'lucide-react';
 
@@ -9,8 +9,8 @@ const difficultyOptions = [
 ];
 
 const realmThemes = [
-  { id: 'ashen-night', label: 'Ashen Night', icon: MoonStar, sub: 'The classic shadow-forged court of Aethelgard.' },
-  { id: 'sunlit-chronicle', label: 'Sunlit Chronicle', icon: Sun, sub: 'A luminous parchment court touched by the Light of Aethel.' },
+  { id: 'ashen-night', label: 'Moonsteel Court', icon: MoonStar, sub: 'High-contrast obsidian, silver, and storm-cyan for the core fantasy mood.' },
+  { id: 'sunlit-chronicle', label: 'Ivory Chronicle', icon: Sun, sub: 'A bright ceremonial version with cleaner distance readability.' },
 ];
 
 const SettingsPanel = ({
@@ -82,7 +82,7 @@ const SettingsPanel = ({
                     style={{
                       background: muted ? 'var(--blood)' : 'var(--bg-card)',
                       border: `1px solid ${muted ? 'var(--iron-red)' : 'var(--border-stone)'}`,
-                      color: muted ? '#e06060' : 'var(--gold)',
+                      color: muted ? '#ffd7df' : 'var(--gold)',
                     }}>
                     {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                   </button>
@@ -97,7 +97,7 @@ const SettingsPanel = ({
                       className="w-full ancient-volume-slider"
                       style={{ accentColor: 'var(--gold)' }}
                     />
-                    <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif' }}>
+                    <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>
                       <span>Silence</span>
                       <span>{Math.round((muted ? 0 : volume) * 100)}%</span>
                       <span>Full</span>
@@ -111,13 +111,13 @@ const SettingsPanel = ({
               <SettingSection icon={<Sun size={18} />} title="The Light of Aethel" sub="Adjust realm visibility">
                 <div className="mt-3">
                   <input
-                    type="range" min="0.3" max="1.2" step="0.05"
+                    type="range" min="0.7" max="1.35" step="0.05"
                     value={brightness}
                     onChange={(event) => setBrightness(parseFloat(event.target.value))}
                     className="w-full"
                     style={{ accentColor: 'var(--gold-bright)' }}
                   />
-                  <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif' }}>
+                  <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>
                     <span>Dark</span>
                     <span>{Math.round(brightness * 100)}%</span>
                     <span>Bright</span>
@@ -127,7 +127,7 @@ const SettingsPanel = ({
 
               <Divider />
 
-              <SettingSection icon={<MoonStar size={18} />} title="Realm Aspect" sub="Choose whether Aethelgard appears as shadow-forged night or radiant parchment">
+              <SettingSection icon={<MoonStar size={18} />} title="Realm Aspect" sub="Choose the premium grade that best fits the room, projector, and distance">
                 <div className="grid grid-cols-1 gap-3 mt-3">
                   {realmThemes.map((theme) => {
                     const Icon = theme.icon;
@@ -138,7 +138,7 @@ const SettingsPanel = ({
                         onClick={() => setRealmTheme(theme.id)}
                         className="text-left rounded-md px-4 py-3 transition-all"
                         style={{
-                          background: active ? 'rgba(201,168,76,0.12)' : 'var(--bg-card)',
+                          background: active ? 'rgba(113,220,245,0.12)' : 'var(--bg-card)',
                           border: `1px solid ${active ? 'var(--gold)' : 'var(--border-stone)'}`,
                           color: active ? 'var(--gold-bright)' : 'var(--text-parchment)',
                         }}>
@@ -167,7 +167,7 @@ const SettingsPanel = ({
                         onClick={() => setDifficulty(option.id)}
                         className="text-left rounded-md px-4 py-3 transition-all"
                         style={{
-                          background: active ? 'rgba(201,168,76,0.12)' : 'var(--bg-card)',
+                          background: active ? 'rgba(113,220,245,0.12)' : 'var(--bg-card)',
                           border: `1px solid ${active ? 'var(--gold)' : 'var(--border-stone)'}`,
                           color: active ? 'var(--gold-bright)' : 'var(--text-parchment)',
                         }}>
@@ -210,7 +210,7 @@ const SettingsPanel = ({
                     className="w-full ancient-volume-slider"
                     style={{ accentColor: 'var(--gold)' }}
                   />
-                  <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'Cinzel, serif' }}>
+                  <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-ui)' }}>
                     <span>Low</span>
                     <span>{Math.round(voiceVolume * 100)}%</span>
                     <span>Grand</span>
@@ -232,8 +232,8 @@ const SettingsPanel = ({
               <Divider />
 
               <SettingSection icon={<Server size={18} />} title="Hosted Oracle Service" sub="AI access is managed by the server for every traveler">
-                <div className="mt-3 p-4 rounded-md" style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid var(--border-gold)' }}>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-parchment)', fontFamily: 'Crimson Text, serif' }}>
+                <div className="mt-3 p-4 rounded-md" style={{ background: 'rgba(113,220,245,0.08)', border: '1px solid var(--border-gold)' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-body)' }}>
                     End users do not need to paste API keys or start extra local services. If the Oracle or Gate Keeper is unavailable, the realm will show a hosted service warning instead of asking for a device-specific key.
                   </p>
                 </div>
@@ -266,13 +266,14 @@ export const SettingsButton = ({ onClick }) => (
     id="settings-btn"
     onClick={onClick}
     title="The Council Chamber"
-    className="fixed top-4 right-4 z-[150] flex items-center gap-2 px-3 py-2 rounded transition-all hover:scale-105"
+    data-tooltip="Open settings"
+    className="tooltip-shell fixed top-4 right-4 z-[150] flex items-center gap-2 px-3 py-2 rounded transition-all hover:scale-105"
     style={{
       background: 'var(--bg-panel)',
       border: '1px solid var(--border-gold)',
       color: 'var(--gold)',
-      boxShadow: '0 0 15px rgba(201,168,76,0.15)',
-      fontFamily: 'Cinzel, serif',
+      boxShadow: '0 0 15px rgba(113,220,245,0.15)',
+      fontFamily: 'var(--font-ui)',
       fontSize: '0.65rem',
       letterSpacing: '0.1em',
     }}>
@@ -282,3 +283,4 @@ export const SettingsButton = ({ onClick }) => (
 );
 
 export default SettingsPanel;
+

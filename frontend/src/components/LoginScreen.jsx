@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, LogIn, UserCircle2, ArrowRight, HelpCircle, X, Send, Loader2 } from 'lucide-react';
 import { SettingsButton } from './SettingsPanel';
 import { useUISounds } from '../hooks/useUISounds';
-import VideoBackground from './VideoBackground';
 
 const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
   const { withSounds } = useUISounds();
@@ -14,11 +13,11 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
   const [error, setError] = useState('');
   const [generatedPin, setGeneratedPin] = useState(null);
 
-  // Screen shake animation for dragon steps
+  // Slow, deliberate dragon presence rather than a constant cheap shake.
   const shakeAnimation = {
-    x: [0, -3, 3, -4, 4, -2, 2, 0],
-    y: [0, 2, -2, 3, -3, 1, -1, 0],
-    transition: { duration: 0.5, repeat: Infinity, repeatDelay: 4 }
+    x: [0, -1, 1, 0],
+    y: [0, 1, -1, 0],
+    transition: { duration: 1.6, repeat: Infinity, repeatDelay: 9 }
   };
 
   const handleCreate = (e) => {
@@ -42,20 +41,28 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
   };
 
   return (
-    <motion.div animate={shakeAnimation} className="flex h-screen w-full items-center justify-center relative overflow-hidden" style={{ background: 'var(--bg-dark)', fontFamily: 'Cinzel, serif' }}>
+    <motion.div animate={shakeAnimation} className="flex h-screen w-full items-center justify-center relative overflow-hidden" style={{ background: 'var(--bg-dark)', fontFamily: 'var(--font-ui)' }}>
 
       {/* Always-visible settings button */}
       <SettingsButton onClick={onOpenSettings} />
 
-      {/* ── CINEMATIC ANIMATED BACKGROUND (Guaranteed to load) ── */}
+      {/* Cinematic animated background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-black">
         {/* Slow panning Dragon background */}
         <div 
-          className="absolute inset-[-10%] w-[120%] h-[120%] bg-center bg-cover bg-no-repeat opacity-60 mix-blend-screen"
+          className="absolute inset-[-8%] w-[116%] h-[116%] bg-center bg-cover bg-no-repeat opacity-70"
           style={{ 
             backgroundImage: 'url(/dragon_bg.png)', 
-            filter: 'contrast(1.2) saturate(1.2)',
-            animation: 'pan-background 30s ease-in-out infinite alternate' 
+            filter: 'contrast(1.08) saturate(1.08) brightness(0.82)',
+            animation: 'pan-background 22s ease-in-out infinite alternate' 
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 58% 36%, rgba(214,121,58,0.34), transparent 20%), radial-gradient(circle at 62% 41%, rgba(255,202,140,0.18), transparent 12%)',
+            mixBlendMode: 'screen',
           }}
         />
         
@@ -65,8 +72,9 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
         <style>{`
           @keyframes pan-background {
             0% { transform: scale(1) translate(0, 0); }
-            50% { transform: scale(1.05) translate(-1%, -1%); }
-            100% { transform: scale(1) translate(1%, 1%); }
+            35% { transform: scale(1.04) translate(-1.2%, -0.8%); }
+            70% { transform: scale(1.08) translate(1.4%, -1.1%); }
+            100% { transform: scale(1.02) translate(0.6%, 1%); }
           }
           @keyframes flicker {
             0% { opacity: 0.7; }
@@ -79,19 +87,19 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
       </div>
 
       {/* Overlays to make UI readable */}
-      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to top, rgba(8,6,3,1) 0%, rgba(8,6,3,0.4) 50%, rgba(8,6,3,0.85) 100%)' }}/>
-      <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse at center, transparent 20%, rgba(8,6,3,0.85) 100%)' }}/>
+      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to top, rgba(3,8,15,1) 0%, rgba(4,10,18,0.42) 50%, rgba(3,8,15,0.88) 100%)' }}/>
+      <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse at center, transparent 20%, rgba(3,8,15,0.84) 100%)' }}/>
 
       {/* Title */}
       <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1.2 }}
         className="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col items-center z-20 text-center">
-        <motion.div className="text-6xl mb-4" animate={{ opacity: [0.7,1,0.7] }} transition={{ duration: 4, repeat: Infinity }}>⚗</motion.div>
-        <h1 className="text-6xl md:text-8xl font-black uppercase" style={{ color: 'var(--gold)', fontFamily: 'Cinzel Decorative, serif', textShadow: '0 0 60px rgba(201,168,76,0.4)' }}>
+        <motion.div className="text-6xl mb-4" animate={{ opacity: [0.7,1,0.7] }} transition={{ duration: 4, repeat: Infinity }}>✦</motion.div>
+        <h1 className="text-6xl md:text-8xl font-black uppercase" style={{ color: 'var(--gold)', fontFamily: 'var(--font-display)', textShadow: '0 0 60px rgba(113,220,245,0.4)' }}>
           Aethelgard
         </h1>
         <div className="flex items-center gap-4 mt-3">
           <div className="divider-ancient w-20"/>
-          <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.4em' }}>The Shattered Realm</p>
+          <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)', letterSpacing: '0.4em' }}>The Shattered Realm</p>
           <div className="divider-ancient w-20"/>
         </div>
       </motion.div>
@@ -122,11 +130,11 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
 
           {mode === 'new' && !generatedPin && (
             <motion.div key="new" initial={{ opacity:0,x:20 }} animate={{ opacity:1,x:0 }} exit={{ opacity:0,x:-20 }}>
-              <button onClick={() => setMode('menu')} className="text-xs mb-4 hover:opacity-80 flex items-center gap-1" style={{ color:'var(--text-dim)', fontFamily:'Crimson Text, serif' }}>← Back</button>
+              <button onClick={() => setMode('menu')} className="text-xs mb-4 hover:opacity-80 flex items-center gap-1" style={{ color:'var(--text-dim)', fontFamily:'var(--font-body)' }}>← Back</button>
               <div className="p-6 space-y-4" style={{ background:'var(--bg-panel)', border:'1px solid var(--border-gold)' }}>
                 <div className="text-0 left-0 right-0 h-0.5 -mt-6 mb-6" style={{ background:'linear-gradient(90deg, transparent, var(--gold), transparent)' }}/>
                 <h3 className="font-ancient text-base font-bold" style={{ color:'var(--text-parchment)' }}>Identity Matrix</h3>
-                {error && <p className="text-xs italic" style={{ color:'var(--iron-red)', fontFamily:'Crimson Text,serif' }}>{error}</p>}
+                {error && <p className="text-xs italic" style={{ color:'var(--iron-red)', fontFamily:'var(--font-body)' }}>{error}</p>}
                 <AncientField label="True Name" type="text" value={name} onChange={setName} placeholder="Speak thy name..."/>
                 <AncientField label="Age of Soul" type="number" value={age} onChange={setAge} placeholder="Thy age..."/>
                 <button {...withSounds({ onClick: handleCreate })} className="btn-ancient w-full py-3 rounded text-sm">Generate Access Key</button>
@@ -138,22 +146,22 @@ const LoginScreen = ({ onLogin, onOpenSettings, onOpenHelp }) => {
             <motion.div key="pin" initial={{ opacity:0,scale:0.9 }} animate={{ opacity:1,scale:1 }}
               className="p-8 text-center" style={{ background:'var(--bg-panel)', border:'1px solid var(--gold)' }}>
               <p className="text-xs font-ancient uppercase mb-2" style={{ color:'var(--gold)', letterSpacing:'0.2em' }}>Thine Access Key</p>
-              <p className="text-xs italic mb-6" style={{ color:'var(--text-dim)', fontFamily:'Crimson Text,serif' }}>
+              <p className="text-xs italic mb-6" style={{ color:'var(--text-dim)', fontFamily:'var(--font-body)' }}>
                 Write it in thine own tome. Losing it means losing thy progress forever.
               </p>
               <div className="text-5xl font-black py-6 mb-6 select-all tracking-[0.5em]"
                 style={{ color:'var(--text-parchment)', background:'var(--bg-dark)', border:'1px solid var(--border-gold)' }}>{generatedPin}</div>
               <button {...withSounds({ onClick: () => onLogin({ pin:generatedPin, isGuest:false, name }) })}
-                className="btn-ancient w-full py-3 rounded">I Remember It — Begin the Journey</button>
+                className="btn-ancient w-full py-3 rounded">I Remember It - Begin the Journey</button>
             </motion.div>
           )}
 
           {mode === 'return' && (
             <motion.div key="return" initial={{ opacity:0,x:-20 }} animate={{ opacity:1,x:0 }} exit={{ opacity:0,x:20 }}>
-              <button onClick={() => setMode('menu')} className="text-xs mb-4 hover:opacity-80" style={{ color:'var(--text-dim)', fontFamily:'Crimson Text,serif' }}>← Back</button>
+              <button onClick={() => setMode('menu')} className="text-xs mb-4 hover:opacity-80" style={{ color:'var(--text-dim)', fontFamily:'var(--font-body)' }}>← Back</button>
               <div className="p-6 space-y-4" style={{ background:'var(--bg-panel)', border:'1px solid var(--border-gold)' }}>
                 <h3 className="font-ancient text-base font-bold" style={{ color:'var(--text-parchment)' }}>Speak Thine Access Key</h3>
-                {error && <p className="text-xs italic" style={{ color:'var(--iron-red)', fontFamily:'Crimson Text,serif' }}>{error}</p>}
+                {error && <p className="text-xs italic" style={{ color:'var(--iron-red)', fontFamily:'var(--font-body)' }}>{error}</p>}
                 <input type="text" maxLength={4} value={pin} onChange={e => setPin(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleReturn(e)}
                   placeholder="XXXX"
@@ -174,12 +182,12 @@ const MenuBtn = ({ icon, label, sub, onClick, gold }) => {
   return (
     <button {...withSounds({ onClick })}
       className="w-full p-4 flex items-center justify-between gap-4 transition-all hover:scale-[1.01] text-left"
-      style={{ background:'var(--bg-card)', border:`1px solid ${gold?'var(--border-gold)':'var(--border-stone)'}`, boxShadow:gold?'0 0 15px rgba(201,168,76,0.1)':'none' }}>
+      style={{ background:'var(--bg-card)', border:`1px solid ${gold?'var(--border-gold)':'var(--border-stone)'}`, boxShadow:gold?'0 0 15px rgba(113,220,245,0.1)':'none' }}>
       <div className="flex items-center gap-3">
         <div className="p-2 rounded" style={{ background:'var(--bg-panel)' }}>{icon}</div>
         <div>
           <p className="font-ancient font-bold text-sm uppercase" style={{ color:gold?'var(--gold)':'var(--text-parchment)', letterSpacing:'0.08em' }}>{label}</p>
-          <p className="text-xs italic" style={{ color:'var(--text-dim)', fontFamily:'Crimson Text,serif' }}>{sub}</p>
+          <p className="text-xs italic" style={{ color:'var(--text-dim)', fontFamily:'var(--font-body)' }}>{sub}</p>
         </div>
       </div>
       <ArrowRight size={14} style={{ color:'var(--text-dim)' }}/>
@@ -199,3 +207,4 @@ const AncientField = ({ label, type, value, onChange, placeholder }) => {
 };
 
 export default LoginScreen;
+

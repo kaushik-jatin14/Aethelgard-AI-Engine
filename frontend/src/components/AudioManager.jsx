@@ -1,26 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactPlayer from 'react-player';
 
-// ================================================================
-// AUDIO MANAGER COMPONENT
-// Uses ReactPlayer to securely stream Epic/LotR cinematic ambient soundtracks from YouTube
-// ================================================================
 const AUDIO_TRACKS = {
-  epic:        'https://www.youtube.com/watch?v=1XkG1b8sNnI', // LotR Epic Theme
-  terrifying:  'https://www.youtube.com/watch?v=6PqO9eK00K0', // Dark Mordor Ambient
-  mystical:    'https://www.youtube.com/watch?v=S2XvxJpE2mU', // Shire / Mystical
-  adventurous: 'https://www.youtube.com/watch?v=1XkG1b8sNnI', 
-  scary:       'https://www.youtube.com/watch?v=6PqO9eK00K0',
-  dark:        'https://www.youtube.com/watch?v=6PqO9eK00K0',
-  tense:       'https://www.youtube.com/watch?v=1XkG1b8sNnI',
-  intimidating:'https://www.youtube.com/watch?v=6PqO9eK00K0',
-  desolate:    'https://www.youtube.com/watch?v=6PqO9eK00K0',
-  default:     'https://www.youtube.com/watch?v=6PqO9eK00K0', // Default to terrifying ancient
+  epic: 'https://www.youtube.com/watch?v=6l4Y0U4M8x0',
+  terrifying: 'https://www.youtube.com/watch?v=TJwYQWGF4lU',
+  mystical: 'https://www.youtube.com/watch?v=qt0ybYlqQvg',
+  adventurous: 'https://www.youtube.com/watch?v=Q0pBzowOKU4',
+  scary: 'https://www.youtube.com/watch?v=6JHu3b-pbh8',
+  dark: 'https://www.youtube.com/watch?v=Gm3Kj8X3K4Q',
+  tense: 'https://www.youtube.com/watch?v=K6BRna4_bmg',
+  intimidating: 'https://www.youtube.com/watch?v=K6BRna4_bmg',
+  desolate: 'https://www.youtube.com/watch?v=3cxixDgHUYw',
+  soothing: 'https://www.youtube.com/watch?v=PZQ6V8e3L9I',
+  default: 'https://www.youtube.com/watch?v=qt0ybYlqQvg',
 };
 
-const AudioManager = ({ atmosphere = 'epic', volume = 0.7, muted = false }) => {
+const CHARACTER_THEME_TRACKS = {
+  shadowveil: 'https://www.youtube.com/watch?v=Gm3Kj8X3K4Q',
+  astral: 'https://www.youtube.com/watch?v=qt0ybYlqQvg',
+  cathedral: 'https://www.youtube.com/watch?v=6l4Y0U4M8x0',
+  wildwood: 'https://www.youtube.com/watch?v=PZQ6V8e3L9I',
+  graveborn: 'https://www.youtube.com/watch?v=TJwYQWGF4lU',
+  tundra: 'https://www.youtube.com/watch?v=Q0pBzowOKU4',
+  stormheart: 'https://www.youtube.com/watch?v=K6BRna4_bmg',
+  moonbloom: 'https://www.youtube.com/watch?v=PZQ6V8e3L9I',
+};
+
+const AudioManager = ({ atmosphere = 'epic', character = null, volume = 0.7, muted = false }) => {
   const [playing, setPlaying] = useState(false);
-  const trackUrl = AUDIO_TRACKS[atmosphere] || AUDIO_TRACKS.default;
+
+  const trackUrl = useMemo(() => {
+    if (character?.audioTheme && CHARACTER_THEME_TRACKS[character.audioTheme]) {
+      return CHARACTER_THEME_TRACKS[character.audioTheme];
+    }
+    return AUDIO_TRACKS[atmosphere] || AUDIO_TRACKS.default;
+  }, [atmosphere, character]);
 
   useEffect(() => {
     const handleInteract = () => {
@@ -41,15 +55,15 @@ const AudioManager = ({ atmosphere = 'epic', volume = 0.7, muted = false }) => {
       <ReactPlayer
         url={trackUrl}
         playing={playing}
-        loop={true}
+        loop
         volume={muted ? 0 : volume}
         muted={muted}
         width="0"
         height="0"
         config={{
           youtube: {
-            playerVars: { autoplay: 1, controls: 0, modestbranding: 1 }
-          }
+            playerVars: { autoplay: 1, controls: 0, modestbranding: 1 },
+          },
         }}
       />
     </div>

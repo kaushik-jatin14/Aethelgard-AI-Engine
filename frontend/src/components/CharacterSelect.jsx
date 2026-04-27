@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { characters } from '../data/characters';
 import { useUISounds } from '../hooks/useUISounds';
@@ -22,9 +22,9 @@ const CharacterSelect = ({ onSelectCharacter }) => {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ background: 'var(--bg-dark)', fontFamily: 'Cinzel, serif' }}>
+    <div className="relative w-full h-screen overflow-hidden" style={{ background: 'var(--bg-dark)', fontFamily: 'var(--font-ui)' }}>
 
-      {/* Background — Cinematic Video Background on hover/select */}
+      {/* Background - cinematic video background on hover/select */}
       <AnimatePresence mode="wait">
         <motion.div key={display.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.5 }}
           className="absolute inset-0 z-0 overflow-hidden">
@@ -44,24 +44,24 @@ const CharacterSelect = ({ onSelectCharacter }) => {
       </AnimatePresence>
 
       {/* Gradient overlays */}
-      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to right, rgba(8,6,3,0.97) 0%, rgba(8,6,3,0.55) 55%, rgba(8,6,3,0.92) 100%)' }}/>
-      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to top, rgba(8,6,3,0.98) 0%, transparent 40%)' }}/>
+      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to right, rgba(4,10,18,0.96) 0%, rgba(7,16,28,0.56) 55%, rgba(4,10,18,0.9) 100%)' }}/>
+      <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(to top, rgba(3,8,15,0.98) 0%, transparent 42%)' }}/>
 
       {/* Header */}
       <div className="relative z-20 text-center pt-6 pb-2">
         <div className="divider-ancient mb-4 mx-24"/>
-        <h1 className="text-4xl font-black uppercase" style={{ color: 'var(--gold)', fontFamily: 'Cinzel Decorative, serif', textShadow: '0 0 40px rgba(201,168,76,0.4)' }}>
+        <h1 className="text-4xl font-black uppercase" style={{ color: 'var(--gold)', fontFamily: 'var(--font-display)', textShadow: '0 0 40px rgba(113,220,245,0.4)' }}>
           Choose Your Champion
         </h1>
-        <p className="text-xs mt-2 italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.2em' }}>
-          {selected ? `${selected.name} — Destiny Sealed` : 'Hover to inspect · Click to seal thy fate'}
+        <p className="text-xs mt-2 italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)', letterSpacing: '0.2em' }}>
+          {selected ? `${selected.name} - Destiny Sealed` : 'Hover to inspect · Click to seal thy fate'}
         </p>
         <div className="divider-ancient mt-4 mx-24"/>
       </div>
 
       <div className="relative z-20 flex flex-1 overflow-hidden px-6 pb-6 gap-8 max-w-[1900px] mx-auto w-full justify-between" style={{ height: 'calc(100vh - 120px)' }}>
 
-        {/* Left Side — 4 Characters */}
+        {/* Left side - 4 characters */}
         <div className="w-[22%] flex flex-col gap-4 py-2 overflow-y-auto custom-scrollbar pr-2">
           {leftChars.map((char, idx) => {
             const isChosen = selected?.id === char.id;
@@ -109,16 +109,16 @@ const CharacterSelect = ({ onSelectCharacter }) => {
 
                 {/* Name plate */}
                 <div className="absolute bottom-0 left-0 right-0 p-3"
-                  style={{ background: 'linear-gradient(to top, rgba(8,6,3,0.98) 0%, rgba(8,6,3,0.6) 60%, transparent 100%)' }}>
-                  <p className="text-sm font-black uppercase leading-tight" style={{ color: isChosen ? 'var(--gold)' : 'var(--text-parchment)', fontFamily: 'Cinzel, serif' }}>{char.name}</p>
-                  <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>{char.title}</p>
+                  style={{ background: 'linear-gradient(to top, rgba(4,9,16,0.98) 0%, rgba(5,12,22,0.62) 60%, transparent 100%)' }}>
+                  <p className="text-sm font-black uppercase leading-tight" style={{ color: isChosen ? 'var(--gold)' : 'var(--text-parchment)', fontFamily: 'var(--font-ui)' }}>{char.name}</p>
+                  <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>{char.title}</p>
                 </div>
               </motion.div>
             );
           })}
         </div>
 
-        {/* Center — Detail */}
+        {/* Center - detail */}
         <div className="w-[45%] flex flex-col h-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div key={display.id + (selected?'-S':'-H')}
@@ -143,8 +143,8 @@ const CharacterSelect = ({ onSelectCharacter }) => {
                 )}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--bg-panel) 0%, transparent 60%)' }}/>
                 <div className="absolute bottom-3 left-5">
-                  <h2 className="text-2xl font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel, serif', textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>{display.name}</h2>
-                  <p className="text-xs font-bold italic" style={{ color: 'var(--gold)', fontFamily: 'Crimson Text, serif', letterSpacing: '0.2em' }}>{display.title}</p>
+                  <h2 className="text-2xl font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-ui)', textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>{display.name}</h2>
+                  <p className="text-xs font-bold italic" style={{ color: 'var(--gold)', fontFamily: 'var(--font-body)', letterSpacing: '0.2em' }}>{display.title}</p>
                 </div>
               </div>
 
@@ -179,8 +179,8 @@ const CharacterSelect = ({ onSelectCharacter }) => {
                         "{display.lore}"
                       </p>
                     </div>
-                    <div className="p-3 rounded" style={{ background: 'rgba(201,168,76,0.07)', border: '1px solid var(--border-gold)' }}>
-                      <p className="text-xs font-ancient uppercase mb-1" style={{ color: 'var(--gold)', letterSpacing:'0.1em' }}>⚔ Mission</p>
+                    <div className="p-3 rounded" style={{ background: 'rgba(113,220,245,0.07)', border: '1px solid var(--border-gold)' }}>
+                      <p className="text-xs font-ancient uppercase mb-1" style={{ color: 'var(--gold)', letterSpacing:'0.1em' }}>Mission</p>
                       <p className="text-sm font-lore font-bold" style={{ color: 'var(--text-parchment)' }}>{display.mission}</p>
                     </div>
                     <div>
@@ -192,7 +192,7 @@ const CharacterSelect = ({ onSelectCharacter }) => {
                   <div className="h-full flex items-center justify-center text-center p-4 my-4 rounded"
                     style={{ border: '1px dashed var(--border-stone)' }}>
                     <div>
-                      <div className="text-2xl mb-3 opacity-40">⚗</div>
+                      <div className="text-2xl mb-3 opacity-40">✦</div>
                       <p className="text-xs font-ancient" style={{ color: 'var(--text-dim)', letterSpacing:'0.1em' }}>Click a Champion<br/>to reveal their ancient lore</p>
                     </div>
                   </div>
@@ -214,7 +214,7 @@ const CharacterSelect = ({ onSelectCharacter }) => {
           </AnimatePresence>
         </div>
 
-        {/* Right Side — 4 Characters */}
+        {/* Right side - 4 characters */}
         <div className="w-[22%] flex flex-col gap-4 py-2 overflow-y-auto custom-scrollbar pl-2">
           {rightChars.map((char, idx) => {
             const isChosen = selected?.id === char.id;
@@ -261,9 +261,9 @@ const CharacterSelect = ({ onSelectCharacter }) => {
 
                 {/* Name plate */}
                 <div className="absolute bottom-0 left-0 right-0 p-3"
-                  style={{ background: 'linear-gradient(to top, rgba(8,6,3,0.98) 0%, rgba(8,6,3,0.6) 60%, transparent 100%)' }}>
-                  <p className="text-sm font-black uppercase leading-tight" style={{ color: isChosen ? 'var(--gold)' : 'var(--text-parchment)', fontFamily: 'Cinzel, serif' }}>{char.name}</p>
-                  <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>{char.title}</p>
+                  style={{ background: 'linear-gradient(to top, rgba(4,9,16,0.98) 0%, rgba(5,12,22,0.62) 60%, transparent 100%)' }}>
+                  <p className="text-sm font-black uppercase leading-tight" style={{ color: isChosen ? 'var(--gold)' : 'var(--text-parchment)', fontFamily: 'var(--font-ui)' }}>{char.name}</p>
+                  <p className="text-xs italic" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>{char.title}</p>
                 </div>
               </motion.div>
             );
@@ -280,8 +280,8 @@ const CharacterSelect = ({ onSelectCharacter }) => {
             <div className="w-16 h-16 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border-gold)', borderTopColor: 'var(--gold)' }}/>
             <div className="text-center">
               <p className="text-xs font-ancient uppercase mb-2" style={{ color: 'var(--gold)', letterSpacing:'0.4em' }}>Destiny Sealed</p>
-              <p className="text-2xl font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'Cinzel Decorative, serif' }}>{selected?.name}</p>
-              <p className="text-sm italic mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'Crimson Text, serif' }}>{selected?.title}</p>
+              <p className="text-2xl font-black uppercase" style={{ color: 'var(--text-parchment)', fontFamily: 'var(--font-display)' }}>{selected?.name}</p>
+              <p className="text-sm italic mt-1" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-body)' }}>{selected?.title}</p>
             </div>
           </motion.div>
         )}
@@ -291,3 +291,4 @@ const CharacterSelect = ({ onSelectCharacter }) => {
 };
 
 export default CharacterSelect;
+
