@@ -255,6 +255,33 @@ function App() {
     }
   };
 
+  const scheduleForgeWorldState = (baseState, char, selectedRegion) => {
+    if (!char) return;
+
+    setIsForgingWorld(true);
+    setForgeLoadingRegion(selectedRegion);
+    forgeWorldState(baseState, char, selectedRegion, { silent: true })
+      .then((forgedState) => {
+        setGameState((prev) => {
+          if (prev.location !== forgedState.location) {
+            return prev;
+          }
+          return {
+            ...prev,
+            world_map: forgedState.world_map || prev.world_map,
+            quest_chain: forgedState.quest_chain || prev.quest_chain,
+            story_memory: forgedState.story_memory || prev.story_memory,
+            dynamic_scene: forgedState.dynamic_scene || prev.dynamic_scene,
+            active_region: forgedState.active_region || prev.active_region,
+          };
+        });
+      })
+      .finally(() => {
+        setForgeLoadingRegion(null);
+        setIsForgingWorld(false);
+      });
+  };
+
   const handleSelectCharacter = async (char) => {
     setServiceBanner(null);
     setCharacter(char);
@@ -326,8 +353,7 @@ function App() {
       setIsProcessing(false);
     }
 
-    const forgedState = await forgeWorldState(workingState, char, startLoc);
-    setGameState(forgedState);
+    scheduleForgeWorldState(workingState, char, startLoc);
   };
 
   const handlePlayerAction = async (action) => {
@@ -346,6 +372,7 @@ function App() {
 
       setChatHistory([...updatedHistory, { role: 'gm', text: res.narrative }]);
       setGameState(nextState);
+      setIsProcessing(false);
       pushDialogueEntry(buildDialogueEntry({
         speaker: character?.name || 'The Oracle',
         label: 'Oracle Chronicle',
@@ -356,8 +383,7 @@ function App() {
 
       const needsForge = !nextState.quest_chain || nextState.location !== previousLocation || nextState.quest_chain?.region !== nextState.location;
       if (needsForge) {
-        const forgedState = await forgeWorldState(nextState, character, nextState.location, { silent: true });
-        setGameState(forgedState);
+        scheduleForgeWorldState(nextState, character, nextState.location);
       }
     } catch (error) {
       const notice = buildServiceNotice(error, 'oracle');

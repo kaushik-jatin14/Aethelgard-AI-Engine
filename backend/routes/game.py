@@ -467,28 +467,32 @@ def call_with_timeout(api_key: str, system_instruction: str, prompt: str, model_
     return result["text"]
 
 
-def call_with_fallback(system_instruction: str, prompt: str) -> str:
+def call_with_model_plan(
+    system_instruction: str,
+    prompt: str,
+    models_to_try: list[str],
+    *,
+    timeout: int,
+    key_limit: int | None = None,
+    exhausted_cache: set | None = None,
+) -> str:
     raise_if_unconfigured()
     keys = get_configured_keys()
-    models_to_try = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-flash-latest",
-    ]
+    if key_limit is not None:
+        keys = keys[:key_limit]
 
     last_error = None
+
     for model in models_to_try:
         for key_index, key in enumerate(keys):
             combo = (model, key[-8:])
-            if combo in EXHAUSTED_COMBOS:
+            if exhausted_cache is not None and combo in exhausted_cache:
                 logger.warning("Skipping exhausted combo model=%s key=...%s", model, key[-8:])
                 continue
 
             try:
-                logger.info("Trying model=%s key_index=%s", model, key_index)
-                text = call_with_timeout(key, system_instruction, prompt, model, timeout=10)
-                logger.info("Success model=%s key_index=%s", model, key_index)
-                return text
+                logger.info("Trying model=%s key_index=%s timeout=%s", model, key_index, timeout)
+                return call_with_timeout(key, system_instruction, prompt, model, timeout=timeout)
             except Exception as exc:
                 classified = classify_upstream_error(exc)
                 logger.warning(
@@ -500,11 +504,11 @@ def call_with_fallback(system_instruction: str, prompt: str) -> str:
                     str(exc)[:160],
                 )
                 last_error = classified
-                if classified.code == "AI_QUOTA_EXHAUSTED":
-                    EXHAUSTED_COMBOS.add(combo)
-                if classified.code == "AI_MODEL_UNAVAILABLE":
+                if classified.code == "AI_QUOTA_EXHAUSTED" and exhausted_cache is not None:
+                    exhausted_cache.add(combo)
+                if classified.code in {"AI_AUTH_INVALID", "AI_MODEL_UNAVAILABLE"}:
                     break
-                time.sleep(0.35 + (key_index * 0.15))
+                time.sleep(0.15 + (key_index * 0.08))
 
     if last_error:
         raise last_error
@@ -517,39 +521,27 @@ def call_with_fallback(system_instruction: str, prompt: str) -> str:
     )
 
 
+def call_with_fallback(system_instruction: str, prompt: str) -> str:
+    return call_with_model_plan(
+        system_instruction,
+        prompt,
+        [
+            "gemini-2.0-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-flash-latest",
+        ],
+        timeout=6,
+        exhausted_cache=EXHAUSTED_COMBOS,
+    )
+
+
 def call_world_builder_ai(system_instruction: str, prompt: str) -> str:
-    raise_if_unconfigured()
-    keys = get_configured_keys()[:1]
-    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash-lite"]
-    last_error = None
-
-    for model in models_to_try:
-        for key_index, key in enumerate(keys):
-            try:
-                logger.info("World-builder trying model=%s key_index=%s", model, key_index)
-                return call_with_timeout(key, system_instruction, prompt, model, timeout=4)
-            except Exception as exc:
-                classified = classify_upstream_error(exc)
-                logger.warning(
-                    "World-builder AI failed model=%s key_index=%s code=%s detail=%s",
-                    model,
-                    key_index,
-                    classified.code,
-                    str(exc)[:160],
-                )
-                last_error = classified
-                if classified.code in {"AI_AUTH_INVALID", "AI_MODEL_UNAVAILABLE"}:
-                    break
-                time.sleep(0.2)
-
-    if last_error:
-        raise last_error
-
-    raise AIServiceError(
-        code="AI_UPSTREAM_FAILURE",
-        message="The World-Forge could not return a usable answer.",
-        status_code=status.HTTP_502_BAD_GATEWAY,
-        retryable=True,
+    return call_with_model_plan(
+        system_instruction,
+        prompt,
+        ["gemini-2.0-flash-lite", "gemini-2.5-flash"],
+        timeout=3,
+        key_limit=1,
     )
 
 
